@@ -73,7 +73,7 @@ router.get("/auth/session", (req, res): void => {
   res.json(user ? { authenticated: true, user } : { authenticated: false });
 });
 
-router.get("/auth/vk", (req, res): void => {
+function startVkLogin(req: Request, res: Response): void {
   const clientId = process.env.VK_CLIENT_ID;
   const redirectUri = process.env.VK_REDIRECT_URI;
   if (!clientId || !redirectUri) {
@@ -96,9 +96,9 @@ router.get("/auth/vk", (req, res): void => {
 
   res.setHeader("Set-Cookie", cookieHeader(STATE_COOKIE, state, 600));
   res.redirect(`https://id.vk.com/authorize?${params.toString()}`);
-});
+}
 
-router.get("/auth/vk/callback", async (req, res): Promise<void> => {
+async function completeVkLogin(req: Request, res: Response): Promise<void> {
   const code = typeof req.query.code === "string" ? req.query.code : undefined;
   const state = typeof req.query.state === "string" ? req.query.state : undefined;
   const storedState = cookieValue(req, STATE_COOKIE);
@@ -167,6 +167,18 @@ router.get("/auth/vk/callback", async (req, res): Promise<void> => {
     logger.warn({ err: error }, "VK OAuth callback failed");
     res.redirect("/login?error=vk_unavailable");
   }
+}
+
+router.get("/auth/vk", (req, res): void => {
+  if (typeof req.query.code === "string" && typeof req.query.state === "string") {
+    void completeVkLogin(req, res);
+    return;
+  }
+  startVkLogin(req, res);
+});
+
+router.get("/auth/vk/callback", (req, res): void => {
+  void completeVkLogin(req, res);
 });
 
 router.post("/auth/logout", (_req, res): void => {

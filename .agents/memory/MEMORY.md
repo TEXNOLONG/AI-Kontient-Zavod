@@ -1,1 +1,2 @@
 - [Mistral generation fallback](mistral-generation.md) — keep content generation usable when provider quotas or API calls fail.
+- [VK OAuth callback](vk-oauth.md) — accept the configured VK redirect path while keeping the canonical callback route available.
