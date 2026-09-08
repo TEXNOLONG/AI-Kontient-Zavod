@@ -497,6 +497,7 @@ components:
         goal: { type: string }
         format: { type: string }
         text: { type: string }
+        imageUrl: { type: [string, "null"] }
         status: { type: string }
     CompetitorPost:
       type: object

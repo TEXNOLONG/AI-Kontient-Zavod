@@ -72,6 +72,8 @@ export interface PostUpdate {
   goal?: string;
   format?: string;
   text?: string;
+  /** @nullable */
+  imageUrl?: string | null;
   status?: string;
 }
 

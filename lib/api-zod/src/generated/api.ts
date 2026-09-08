@@ -241,6 +241,7 @@ export const UpdatePostBody = zod.object({
   "goal": zod.string().optional(),
   "format": zod.string().optional(),
   "text": zod.string().optional(),
+  "imageUrl": zod.string().nullish(),
   "status": zod.string().optional()
 })
 
