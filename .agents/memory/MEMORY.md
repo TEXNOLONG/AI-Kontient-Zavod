@@ -1,2 +1,3 @@
 - [Mistral generation fallback](mistral-generation.md) — keep content generation usable when provider quotas or API calls fail.
 - [Multi-tenant publishing model](multi-tenant-publishing.md) — email identifies the user; each publishing channel is separately owned and authorized.
+- [MAX TLS trust bundle](max-tls.md) — Node needs both the official Russian intermediate and root CA before MAX fetches validate.
