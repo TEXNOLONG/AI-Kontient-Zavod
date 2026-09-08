@@ -1,0 +1,234 @@
+> @workspace/api-server@0.0.0 dev /home/runner/workspace/artifacts/api-server
+> export NODE_ENV=development && pnpm run build && pnpm run start
+
+
+> @workspace/api-server@0.0.0 build /home/runner/workspace/artifacts/api-server
+> node ./build.mjs
+
+
+  dist/index.mjs                   2.2mb ⚠️
+  dist/pino-worker.mjs           153.4kb
+  dist/pino-file.mjs             142.1kb
+  dist/pino-pretty.mjs           114.4kb
+  dist/thread-stream-worker.mjs    7.3kb
+  ...and 5 more output files...
+
+⚡ Done in 429ms
+
+> @workspace/api-server@0.0.0 start /home/runner/workspace/artifacts/api-server
+> NODE_EXTRA_CA_CERTS="$PWD/certs/russian-trusted-sub-ca.pem" node --enable-source-maps ./dist/index.mjs
+
+[19:29:07.643] INFO (1020): Server listening
+    port: 8080
+[19:29:08.177] INFO (1020): request completed
+    req: {
+      "id": 1,
+      "method": "GET",
+      "url": "/"
+    }
+    res: {
+      "statusCode": 404
+    }
+    responseTime: 5
+[19:29:09.290] INFO (1020): request completed
+    req: {
+      "id": 2,
+      "method": "GET",
+      "url": "/"
+    }
+    res: {
+      "statusCode": 404
+    }
+    responseTime: 1
+[19:29:11.691] INFO (1020): request completed
+    req: {
+      "id": 3,
+      "method": "GET",
+      "url": "/"
+    }
+    res: {
+      "statusCode": 404
+    }
+    responseTime: 1
+[19:29:18.680] INFO (1020): request completed
+    req: {
+      "id": 4,
+      "method": "GET",
+      "url": "/"
+    }
+    res: {
+      "statusCode": 404
+    }
+    responseTime: 2
+[19:29:39.040] ERROR (1020): Publishing queue failed
+    err: {
+      "type": "_DrizzleQueryError",
+      "message": "Failed query: select \"id\", \"user_id\", \"post_id\", \"channel_id\", \"scheduled_at\", \"status\", \"external_id\", \"error\", \"published_at\", \"created_at\" from \"publishing_jobs\" where (\"publishing_jobs\".\"status\" = $1 and \"publishing_jobs\".\"scheduled_at\" <= $2)\nparams: pending,2026-09-08T19:29:37.664Z: relation \"publishing_jobs\" does not exist",
+      "stack":
+          Error: Failed query: select "id", "user_id", "post_id", "channel_id", "scheduled_at", "status", "external_id", "error", "published_at", "created_at" from "publishing_jobs" where ("publishing_jobs"."status" = $1 and "publishing_jobs"."scheduled_at" <= $2)
+          params: pending,2026-09-08T19:29:37.664Z
+              at NodePgPreparedQuery.queryWithCache (/home/runner/workspace/node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.3_pg@8.22.0/node_modules/src/pg-core/session.ts:73:11)
+              at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+              at async <anonymous> (/home/runner/workspace/node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.3_pg@8.22.0/node_modules/src/node-postgres/session.ts:154:19)
+              at async processDuePublishingJobs (/home/runner/workspace/artifacts/api-server/src/routes/publishing.ts:142:16)
+          caused by: error: relation "publishing_jobs" does not exist
+              at <anonymous> (/home/runner/workspace/node_modules/.pnpm/pg-pool@3.14.0_pg@8.22.0/node_modules/pg-pool/index.js:45:11)
+              at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+              at async <anonymous> (/home/runner/workspace/node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.3_pg@8.22.0/node_modules/src/node-postgres/session.ts:161:13)
+              at async NodePgPreparedQuery.queryWithCache (/home/runner/workspace/node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.3_pg@8.22.0/node_modules/src/pg-core/session.ts:71:12)
+              at async <anonymous> (/home/runner/workspace/node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.3_pg@8.22.0/node_modules/src/node-postgres/session.ts:154:19)
+              at async processDuePublishingJobs (/home/runner/workspace/artifacts/api-server/src/routes/publishing.ts:142:16)
+      "query": "select \"id\", \"user_id\", \"post_id\", \"channel_id\", \"scheduled_at\", \"status\", \"external_id\", \"error\", \"published_at\", \"created_at\" from \"publishing_jobs\" where (\"publishing_jobs\".\"status\" = $1 and \"publishing_jobs\".\"scheduled_at\" <= $2)",
+      "params": [
+        "pending",
+        "2026-09-08T19:29:37.664Z"
+      ]
+    }
+[19:29:50.760] INFO (1020): request completed
+    req: {
+      "id": 5,
+      "method": "POST",
+      "url": "/api/auth/register"
+    }
+    res: {
+      "statusCode": 400
+    }
+    responseTime: 8
+Error: Failed query: select "id" from "auth_users" where "auth_users"."email" = $1
+params: sdfsdfdsfdsfdsfdsf89@gmail.com
+    at NodePgPreparedQuery.queryWithCache (/home/runner/workspace/node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.3_pg@8.22.0/node_modules/src/pg-core/session.ts:73:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async <anonymous> (/home/runner/workspace/node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.3_pg@8.22.0/node_modules/src/node-postgres/session.ts:154:19)
+    at async <anonymous> (/home/runner/workspace/artifacts/api-server/src/routes/auth.ts:81:20)
+[19:29:52.815] INFO (1020): request errored
+    req: {
+      "id": 6,
+      "method": "POST",
+      "url": "/api/auth/register"
+    }
+    res: {
+      "statusCode": 500
+    }
+    responseTime: 17
+    err: {
+      "type": "Error",
+      "message": "failed with status code 500",
+      "stack":
+          Error: failed with status code 500
+              at onResFinished (/home/runner/workspace/node_modules/.pnpm/pino-http@10.5.0/node_modules/pino-http/logger.js:115:39)
+              at ServerResponse.onResponseComplete (/home/runner/workspace/node_modules/.pnpm/pino-http@10.5.0/node_modules/pino-http/logger.js:178:14)
+              at ServerResponse.emit (node:events:536:35)
+              at onFinish (node:_http_outgoing:1031:10)
+              at callback (node:internal/streams/writable:766:21)
+              at afterWrite (node:internal/streams/writable:710:5)
+              at afterWriteTick (node:internal/streams/writable:696:10)
+              at process.processTicksAndRejections (node:internal/process/task_queues:81:21)
+    }
+Error: Failed query: select "id" from "auth_users" where "auth_users"."email" = $1
+params: sdfsdfdsfdsfdsfdsf89@gmail.com
+    at NodePgPreparedQuery.queryWithCache (/home/runner/workspace/node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.3_pg@8.22.0/node_modules/src/pg-core/session.ts:73:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async <anonymous> (/home/runner/workspace/node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.3_pg@8.22.0/node_modules/src/node-postgres/session.ts:154:19)
+    at async <anonymous> (/home/runner/workspace/artifacts/api-server/src/routes/auth.ts:81:20)
+[19:29:56.244] INFO (1020): request errored
+    req: {
+      "id": 7,
+      "method": "POST",
+      "url": "/api/auth/register"
+    }
+    res: {
+      "statusCode": 500
+    }
+    responseTime: 17
+    err: {
+      "type": "Error",
+      "message": "failed with status code 500",
+      "stack":
+          Error: failed with status code 500
+              at onResFinished (/home/runner/workspace/node_modules/.pnpm/pino-http@10.5.0/node_modules/pino-http/logger.js:115:39)
+              at ServerResponse.onResponseComplete (/home/runner/workspace/node_modules/.pnpm/pino-http@10.5.0/node_modules/pino-http/logger.js:178:14)
+              at ServerResponse.emit (node:events:536:35)
+              at onFinish (node:_http_outgoing:1031:10)
+              at callback (node:internal/streams/writable:766:21)
+              at afterWrite (node:internal/streams/writable:710:5)
+              at afterWriteTick (node:internal/streams/writable:696:10)
+              at process.processTicksAndRejections (node:internal/process/task_queues:81:21)
+    }
+Error: Failed query: select "id" from "auth_users" where "auth_users"."email" = $1
+params: sdfsdfdsfdsfdsfdsf@gmail.com
+    at NodePgPreparedQuery.queryWithCache (/home/runner/workspace/node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.3_pg@8.22.0/node_modules/src/pg-core/session.ts:73:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async <anonymous> (/home/runner/workspace/node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.3_pg@8.22.0/node_modules/src/node-postgres/session.ts:154:19)
+    at async <anonymous> (/home/runner/workspace/artifacts/api-server/src/routes/auth.ts:81:20)
+[19:30:02.310] INFO (1020): request errored
+    req: {
+      "id": 8,
+      "method": "POST",
+      "url": "/api/auth/register"
+    }
+    res: {
+      "statusCode": 500
+    }
+    responseTime: 32
+    err: {
+      "type": "Error",
+      "message": "failed with status code 500",
+      "stack":
+          Error: failed with status code 500
+              at onResFinished (/home/runner/workspace/node_modules/.pnpm/pino-http@10.5.0/node_modules/pino-http/logger.js:115:39)
+              at ServerResponse.onResponseComplete (/home/runner/workspace/node_modules/.pnpm/pino-http@10.5.0/node_modules/pino-http/logger.js:178:14)
+              at ServerResponse.emit (node:events:536:35)
+              at onFinish (node:_http_outgoing:1031:10)
+              at callback (node:internal/streams/writable:766:21)
+              at afterWrite (node:internal/streams/writable:710:5)
+              at afterWriteTick (node:internal/streams/writable:696:10)
+              at process.processTicksAndRejections (node:internal/process/task_queues:81:21)
+    }
+[19:30:07.684] ERROR (1020): Publishing queue failed
+    err: {
+      "type": "_DrizzleQueryError",
+      "message": "Failed query: select \"id\", \"user_id\", \"post_id\", \"channel_id\", \"scheduled_at\", \"status\", \"external_id\", \"error\", \"published_at\", \"created_at\" from \"publishing_jobs\" where (\"publishing_jobs\".\"status\" = $1 and \"publishing_jobs\".\"scheduled_at\" <= $2)\nparams: pending,2026-09-08T19:30:07.664Z: relation \"publishing_jobs\" does not exist",
+      "stack":
+          Error: Failed query: select "id", "user_id", "post_id", "channel_id", "scheduled_at", "status", "external_id", "error", "published_at", "created_at" from "publishing_jobs" where ("publishing_jobs"."status" = $1 and "publishing_jobs"."scheduled_at" <= $2)
+          params: pending,2026-09-08T19:30:07.664Z
+              at NodePgPreparedQuery.queryWithCache (/home/runner/workspace/node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.3_pg@8.22.0/node_modules/src/pg-core/session.ts:73:11)
+              at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+              at async <anonymous> (/home/runner/workspace/node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.3_pg@8.22.0/node_modules/src/node-postgres/session.ts:154:19)
+              at async processDuePublishingJobs (/home/runner/workspace/artifacts/api-server/src/routes/publishing.ts:142:16)
+          caused by: error: relation "publishing_jobs" does not exist
+              at <anonymous> (/home/runner/workspace/node_modules/.pnpm/pg-pool@3.14.0_pg@8.22.0/node_modules/pg-pool/index.js:45:11)
+              at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+              at async <anonymous> (/home/runner/workspace/node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.3_pg@8.22.0/node_modules/src/node-postgres/session.ts:161:13)
+              at async NodePgPreparedQuery.queryWithCache (/home/runner/workspace/node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.3_pg@8.22.0/node_modules/src/pg-core/session.ts:71:12)
+              at async <anonymous> (/home/runner/workspace/node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.3_pg@8.22.0/node_modules/src/node-postgres/session.ts:154:19)
+              at async processDuePublishingJobs (/home/runner/workspace/artifacts/api-server/src/routes/publishing.ts:142:16)
+      "query": "select \"id\", \"user_id\", \"post_id\", \"channel_id\", \"scheduled_at\", \"status\", \"external_id\", \"error\", \"published_at\", \"created_at\" from \"publishing_jobs\" where (\"publishing_jobs\".\"status\" = $1 and \"publishing_jobs\".\"scheduled_at\" <= $2)",
+      "params": [
+        "pending",
+        "2026-09-08T19:30:07.664Z"
+      ]
+    }
+[19:30:37.707] ERROR (1020): Publishing queue failed
+    err: {
+      "type": "_DrizzleQueryError",
+      "message": "Failed query: select \"id\", \"user_id\", \"post_id\", \"channel_id\", \"scheduled_at\", \"status\", \"external_id\", \"error\", \"published_at\", \"created_at\" from \"publishing_jobs\" where (\"publishing_jobs\".\"status\" = $1 and \"publishing_jobs\".\"scheduled_at\" <= $2)\nparams: pending,2026-09-08T19:30:37.693Z: relation \"publishing_jobs\" does not exist",
+      "stack":
+          Error: Failed query: select "id", "user_id", "post_id", "channel_id", "scheduled_at", "status", "external_id", "error", "published_at", "created_at" from "publishing_jobs" where ("publishing_jobs"."status" = $1 and "publishing_jobs"."scheduled_at" <= $2)
+          params: pending,2026-09-08T19:30:37.693Z
+              at NodePgPreparedQuery.queryWithCache (/home/runner/workspace/node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.3_pg@8.22.0/node_modules/src/pg-core/session.ts:73:11)
+              at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+              at async <anonymous> (/home/runner/workspace/node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.3_pg@8.22.0/node_modules/src/node-postgres/session.ts:154:19)
+              at async processDuePublishingJobs (/home/runner/workspace/artifacts/api-server/src/routes/publishing.ts:142:16)
+          caused by: error: relation "publishing_jobs" does not exist
+              at <anonymous> (/home/runner/workspace/node_modules/.pnpm/pg-pool@3.14.0_pg@8.22.0/node_modules/pg-pool/index.js:45:11)
+              at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+              at async <anonymous> (/home/runner/workspace/node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.3_pg@8.22.0/node_modules/src/node-postgres/session.ts:161:13)
+              at async NodePgPreparedQuery.queryWithCache (/home/runner/workspace/node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.3_pg@8.22.0/node_modules/src/pg-core/session.ts:71:12)
+              at async <anonymous> (/home/runner/workspace/node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.3_pg@8.22.0/node_modules/src/node-postgres/session.ts:154:19)
+              at async processDuePublishingJobs (/home/runner/workspace/artifacts/api-server/src/routes/publishing.ts:142:16)
+      "query": "select \"id\", \"user_id\", \"post_id\", \"channel_id\", \"scheduled_at\", \"status\", \"external_id\", \"error\", \"published_at\", \"created_at\" from \"publishing_jobs\" where (\"publishing_jobs\".\"status\" = $1 and \"publishing_jobs\".\"scheduled_at\" <= $2)",
+      "params": [
+        "pending",
+        "2026-09-08T19:30:37.693Z"
+      ]
+    }

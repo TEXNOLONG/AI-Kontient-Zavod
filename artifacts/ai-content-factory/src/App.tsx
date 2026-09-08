@@ -55,10 +55,10 @@ function platformLabel(platform: string) {
 
 function Button({ children, className, variant = 'primary', ...props }: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: 'primary' | 'quiet' | 'outline' | 'danger' }) {
   return <button {...props} className={cn(
-    'inline-flex items-center justify-center gap-2 rounded-lg px-3.5 py-2.5 text-sm font-semibold transition-transform disabled:cursor-not-allowed disabled:opacity-50',
-    variant === 'primary' && 'bg-primary text-primary-foreground shadow-[0_6px_16px_hsl(var(--primary)/.18)] hover:-translate-y-0.5 hover:brightness-95',
+    'inline-flex items-center justify-center gap-2 rounded-lg px-3.5 py-2.5 text-sm font-bold transition-all disabled:cursor-not-allowed disabled:opacity-50',
+    variant === 'primary' && 'bg-primary text-primary-foreground shadow-[0_8px_20px_hsl(var(--primary)/.18)] hover:-translate-y-0.5 hover:shadow-[0_12px_26px_hsl(var(--primary)/.24)] hover:brightness-95',
     variant === 'quiet' && 'text-muted-foreground hover:bg-muted hover:text-foreground',
-    variant === 'outline' && 'border border-border bg-card text-foreground shadow-sm hover:-translate-y-0.5 hover:border-primary/50 hover:bg-muted',
+    variant === 'outline' && 'border border-border bg-card text-foreground shadow-sm hover:-translate-y-0.5 hover:border-primary/50 hover:bg-secondary',
     variant === 'danger' && 'border border-destructive/25 bg-destructive/10 text-destructive hover:bg-destructive/15',
     className,
   )} />;
@@ -80,7 +80,7 @@ function Skeleton({ className = '' }: { className?: string }) {
 
 function EmptyState({ icon: Icon, title, text, action }: { icon: typeof Sparkles; title: string; text: string; action?: ReactNode }) {
   return <div className="flex min-h-52 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-card/60 px-6 text-center">
-    <div className="mb-3 rounded-full bg-secondary p-3 text-accent"><Icon size={19} /></div>
+    <div className="relative mb-4 grid size-12 place-items-center rounded-2xl bg-secondary text-accent shadow-sm"><span className="absolute inset-2 rounded-xl border border-accent/20" /><Icon size={19} /></div>
     <h3 className="font-bold text-foreground">{title}</h3>
     <p className="mt-1 max-w-sm text-sm text-muted-foreground">{text}</p>
     {action && <div className="mt-4">{action}</div>}
@@ -88,7 +88,7 @@ function EmptyState({ icon: Icon, title, text, action }: { icon: typeof Sparkles
 }
 
 function BrandMark() {
-  return <span className="relative grid size-10 place-items-center rounded-md bg-primary text-sidebar"><Zap size={19} strokeWidth={2.8} /></span>;
+  return <span className="brand-mark relative grid size-10 place-items-center rounded-xl bg-primary text-sidebar shadow-[0_8px_18px_hsl(var(--primary)/.24)]"><span className="absolute inset-1 rounded-lg border border-sidebar/25" /><Zap size={18} strokeWidth={2.8} /></span>;
 }
 
 function LandingPage() {
@@ -149,10 +149,10 @@ function LoginPage() {
   const [, setLocation] = useLocation(); const [mode, setMode] = useState<'login' | 'register'>('login'); const [form, setForm] = useState({ email: '', password: '', name: '' }); const [error, setError] = useState(''); const [busy, setBusy] = useState(false);
   const submit = async (event: FormEvent) => { event.preventDefault(); setBusy(true); setError(''); try { const response = await fetch(`/api/auth/${mode}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) }); const payload = await response.json().catch(() => ({})) as { error?: string }; if (!response.ok) throw new Error(payload.error ?? 'Не удалось выполнить вход'); setLocation('/app'); } catch (e) { setError(e instanceof Error ? e.message : 'Не удалось выполнить вход'); } finally { setBusy(false); } };
   const set = (key: keyof typeof form, value: string) => setForm((prev) => ({ ...prev, [key]: value }));
-  return <div className="flex min-h-[100dvh] items-center justify-center bg-sidebar px-5 py-8 text-sidebar-foreground">
+  return <div className="auth-page flex min-h-[100dvh] items-center justify-center bg-sidebar px-5 py-8 text-sidebar-foreground">
     <div className="w-full max-w-md animate-in">
       <Link href="/" className="mx-auto flex w-fit items-center gap-3" data-testid="link-login-brand"><BrandMark /><span><span className="block text-[15px] font-extrabold tracking-tight">AI Контент</span><span className="font-mono text-[10px] uppercase tracking-[.16em] text-sidebar-foreground/45">завод / 01</span></span></Link>
-      <div className="mt-10 rounded-xl border border-sidebar-border bg-sidebar-accent/75 p-6 shadow-2xl md:p-8">
+      <div className="auth-card mt-10 rounded-xl border border-sidebar-border bg-sidebar-accent/75 p-6 shadow-2xl md:p-8">
         <div className="font-mono text-[10px] uppercase tracking-[.2em] text-primary">{mode === 'login' ? 'Вход в цех' : 'Регистрация в цехе'}</div>
         <h1 className="mt-3 text-3xl font-extrabold tracking-[-.05em]">{mode === 'login' ? 'Продолжить работу с брендом' : 'Создайте рабочее пространство'}</h1>
         <p className="mt-3 text-sm leading-relaxed text-sidebar-foreground/60">Почта нужна только для входа и сохранения вашего рабочего пространства.</p>
@@ -208,14 +208,14 @@ function Shell({ children }: { children: ReactNode }) {
         </Link>
         <button onClick={() => setMobileOpen(false)} className="rounded p-1 text-sidebar-foreground/60 hover:bg-sidebar-accent md:hidden" data-testid="button-close-menu"><X size={18} /></button>
       </div>
-      <div className="mt-10 px-2 font-mono text-[10px] uppercase tracking-[.16em] text-sidebar-foreground/40">Рабочее пространство</div>
+       <div className="mt-10 flex items-center gap-2 px-2 font-mono text-[10px] uppercase tracking-[.16em] text-sidebar-foreground/40"><span className="size-1.5 rounded-full bg-primary" />Рабочее пространство</div>
       <nav className="mt-3 space-y-1">
         {navItems.map(({ href, label, icon: Icon }) => <Link key={href} href={href} onClick={() => setMobileOpen(false)} data-testid={`link-nav-${label.toLowerCase()}`} className={cn(
           'group flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-semibold',
           location === href ? 'bg-sidebar-accent text-sidebar-foreground' : 'text-sidebar-foreground/62 hover:bg-sidebar-accent/70 hover:text-sidebar-foreground',
         )}><Icon size={17} className={cn(location === href ? 'text-primary' : 'text-sidebar-foreground/45', 'transition-transform group-hover:translate-x-0.5')} /><span>{label}</span>{location === href && <span className="ml-auto size-1.5 rounded-full bg-primary" />}</Link>)}
       </nav>
-      <div className="mt-8 px-2 font-mono text-[10px] uppercase tracking-[.16em] text-sidebar-foreground/40">Система</div>
+       <div className="mt-8 flex items-center gap-2 px-2 font-mono text-[10px] uppercase tracking-[.16em] text-sidebar-foreground/40"><span className="size-1.5 rounded-full bg-accent" />Система</div>
       <nav className="mt-3 space-y-1">
         <Link href="/settings" data-testid="link-nav-settings" className={cn('flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-semibold', location === '/settings' ? 'bg-sidebar-accent text-sidebar-foreground' : 'text-sidebar-foreground/62 hover:bg-sidebar-accent/70 hover:text-sidebar-foreground')}><Settings2 size={17} className={location === '/settings' ? 'text-primary' : 'text-sidebar-foreground/45'} />Настройки</Link>
       </nav>
@@ -229,7 +229,7 @@ function Shell({ children }: { children: ReactNode }) {
     {mobileOpen && <button className="fixed inset-0 z-30 bg-sidebar/40 md:hidden" onClick={() => setMobileOpen(false)} aria-label="Закрыть меню" data-testid="button-overlay" />}
     <main className="min-h-[100dvh] md:pl-[248px]">
       <header className="sticky top-0 z-20 flex h-[68px] items-center justify-between border-b border-border/70 bg-background/90 px-5 backdrop-blur md:px-9">
-        <div className="flex items-center gap-3"><button onClick={() => setMobileOpen(true)} className="rounded-md p-2 hover:bg-muted md:hidden" data-testid="button-open-menu"><Menu size={20} /></button><div><div className="font-mono text-[10px] uppercase tracking-[.17em] text-muted-foreground">Контентный цех / {active}</div><h1 className="mt-0.5 text-sm font-extrabold tracking-tight md:text-base">{active}</h1></div></div>
+         <div className="flex items-center gap-3"><button onClick={() => setMobileOpen(true)} className="rounded-md p-2 hover:bg-muted md:hidden" data-testid="button-open-menu"><Menu size={20} /></button><div><div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[.17em] text-muted-foreground"><span className="size-1.5 rounded-full bg-accent" />Контентный цех / {active}</div><h1 className="mt-0.5 text-sm font-extrabold tracking-tight md:text-base">{active}</h1></div></div>
         <div className="flex items-center gap-2"><button onClick={() => setLocation('/content')} className="hidden items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-xs text-muted-foreground shadow-sm hover:border-primary/50 hover:text-foreground sm:flex" data-testid="button-command-search"><Command size={14} />Быстрый поиск <kbd className="rounded bg-muted px-1.5 py-0.5 font-mono text-[10px]">⌘ K</kbd></button><button onClick={() => toast('Уведомлений пока нет')} className="relative rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground" data-testid="button-notifications" aria-label="Уведомления"><Bell size={18} /><span className="absolute right-1.5 top-1.5 size-1.5 rounded-full bg-primary" /></button></div>
       </header>
       <div className="mx-auto max-w-[1440px] px-5 py-7 md:px-9 md:py-9">{children}</div>
@@ -238,7 +238,7 @@ function Shell({ children }: { children: ReactNode }) {
 }
 
 function PageIntro({ eyebrow, title, description, action }: { eyebrow: string; title: string; description?: string; action?: ReactNode }) {
-  return <div className="mb-8 flex flex-col justify-between gap-5 md:flex-row md:items-end"><div className="animate-in"><div className="font-mono text-[10px] uppercase tracking-[.2em] text-primary">{eyebrow}</div><h2 className="mt-2 text-3xl font-extrabold tracking-[-.04em] text-foreground md:text-4xl">{title}</h2>{description && <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">{description}</p>}</div>{action && <div className="animate-in delay-1">{action}</div>}</div>;
+  return <div className="page-intro mb-8 flex flex-col justify-between gap-5 border-b border-border/70 pb-7 md:flex-row md:items-end"><div className="animate-in"><div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[.2em] text-primary"><span className="size-1.5 rounded-full bg-primary" />{eyebrow}</div><h2 className="mt-3 text-3xl font-extrabold tracking-[-.055em] text-foreground md:text-5xl">{title}</h2>{description && <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground">{description}</p>}</div>{action && <div className="animate-in delay-1">{action}</div>}</div>;
 }
 
 function DashboardPage() {
