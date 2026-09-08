@@ -8,6 +8,8 @@
 
 export interface PostUpdate {
   title?: string;
+  goal?: string;
+  format?: string;
   text?: string;
   status?: string;
 }

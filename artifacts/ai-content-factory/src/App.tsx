@@ -364,13 +364,14 @@ function ContentPage() {
     );
   };
   const visible = posts.data ?? [];
-  const savePost = (data: { title?: string; text?: string; status?: string }) => update.mutate(
+  const savePost = (data: { title?: string; goal?: string; format?: string; text?: string; status?: string }, options?: { close?: boolean; onSuccess?: () => void }) => update.mutate(
     { id: selected?.id ?? 0, data },
     {
       onSuccess: () => {
         if (selected) queryClient.invalidateQueries({ queryKey: getListPostsQueryKey({ projectId: selected.projectId, status: null }) });
         toast.success(data.status === 'approved' ? 'Материал одобрен' : 'Черновик сохранён');
-        setSelected(undefined);
+         options?.onSuccess?.();
+         if (options?.close !== false) setSelected(undefined);
       },
       onError: (error) => toast.error(errorText(error, 'Не удалось сохранить материал')),
     },
@@ -378,24 +379,91 @@ function ContentPage() {
   return <><PageIntro eyebrow="02 / Content engine" title="Контент" description="От брифа до одобрения — все варианты в одном потоке. Выберите проект и задайте следующую тему." action={<div className="flex items-center gap-2"><select value={projectId ?? ''} onChange={(e) => setProjectId(Number(e.target.value))} className="rounded-md border border-input bg-card px-3 py-2.5 text-sm font-semibold outline-none focus:border-primary" data-testid="select-content-project">{projects.data?.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}</select></div>} /><div className="grid gap-5 lg:grid-cols-[.8fr_1.2fr]"><form onSubmit={generateNow} className="animate-in rounded-lg border border-border bg-sidebar p-5 text-sidebar-foreground lg:sticky lg:top-24 lg:h-fit" data-testid="form-generate-post"><div className="flex items-start justify-between"><div><div className="font-mono text-[10px] uppercase tracking-[.17em] text-primary">Новый запуск</div><h3 className="mt-2 text-xl font-extrabold">Что создаём?</h3></div><Sparkles size={20} className="text-primary" /></div><label className="mt-7 block"><span className="mb-2 block text-xs font-bold text-sidebar-foreground/70">Тема или мысль</span><textarea value={brief.topic} onChange={(e) => setBrief((p) => ({ ...p, topic: e.target.value }))} rows={5} placeholder="Например: почему хороший сервис начинается до покупки" className="w-full resize-none rounded-md border border-sidebar-border bg-sidebar-accent px-3 py-3 text-sm outline-none placeholder:text-sidebar-foreground/35 focus:border-primary" data-testid="input-post-topic" /></label><div className="mt-5 grid gap-4 sm:grid-cols-2"><label><span className="mb-2 block text-xs font-bold text-sidebar-foreground/70">Цель</span><select value={brief.goal} onChange={(e) => setBrief((p) => ({ ...p, goal: e.target.value }))} className="w-full rounded-md border border-sidebar-border bg-sidebar-accent px-3 py-2.5 text-sm outline-none" data-testid="select-post-goal"><option>Вовлечение</option><option>Продажа</option><option>Доверие</option><option>Охват</option></select></label><label><span className="mb-2 block text-xs font-bold text-sidebar-foreground/70">Формат</span><select value={brief.format} onChange={(e) => setBrief((p) => ({ ...p, format: e.target.value }))} className="w-full rounded-md border border-sidebar-border bg-sidebar-accent px-3 py-2.5 text-sm outline-none" data-testid="select-post-format"><option>Пост</option><option>Карусель</option><option>Короткое видео</option><option>История</option></select></label></div><Button type="submit" disabled={generate.isPending || !projectId} className="mt-6 w-full" data-testid="button-generate-post">{generate.isPending ? <RefreshCw size={15} className="animate-spin" /> : <Sparkles size={15} />}Создать вариант</Button><div className="mt-4 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[.12em] text-sidebar-foreground/40"><Activity size={12} className="text-accent" />AI готов к работе</div></form><section className="animate-in delay-1 rounded-lg border border-border bg-card"><div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-5 py-4"><div><div className="font-mono text-[10px] uppercase tracking-[.17em] text-muted-foreground">Рабочая лента</div><h3 className="mt-1 text-lg font-extrabold">{visible.length} материалов</h3></div><div className="flex gap-1 rounded-md bg-muted p-1">{['all', 'draft', 'approved'].map((item) => <button key={item} onClick={() => setFilter(item)} className={cn('rounded px-2.5 py-1.5 text-xs font-bold', filter === item ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground')} data-testid={`button-filter-${item}`}>{item === 'all' ? 'Все' : statusLabel(item)}</button>)}</div></div>{posts.isLoading ? <div className="space-y-3 p-5">{[1, 2, 3].map((i) => <Skeleton className="h-16" key={i} />)}</div> : posts.isError ? <div className="p-5"><EmptyState icon={Activity} title="Лента недоступна" text="Проверьте проект и повторите попытку." action={<Button onClick={() => posts.refetch()} data-testid="button-retry-posts">Повторить</Button>} /></div> : visible.length === 0 ? <div className="p-5"><EmptyState icon={FileText} title="Пустая лента" text="Слева можно запустить первый материал. Обычно хороший бриф — это одна ясная мысль." /></div> : <div className="divide-y divide-border">{visible.map((post, index) => <PostRow key={post.id} post={post} index={index} onEdit={setSelected} />)}</div>}</section></div>{selected && <PostEditor post={selected} onClose={() => setSelected(undefined)} onUpdate={savePost} onRegenerate={() => regenerate.mutate({ id: selected.id }, { onSuccess: (post) => { setSelected(post); queryClient.invalidateQueries({ queryKey: getListPostsQueryKey({ projectId: selected.projectId, status: null }) }); toast.success('Новый вариант готов'); }, onError: (error) => toast.error(errorText(error, 'Не удалось перегенерировать')) })} busy={update.isPending || regenerate.isPending} />}</>;
 }
 
-function PostEditor({ post, onClose, onUpdate, onRegenerate, busy }: { post: Post; onClose: () => void; onUpdate: (data: { title?: string; text?: string; status?: string }) => void; onRegenerate: () => void; busy: boolean }) {
-  const [title, setTitle] = useState(post.title); const [text, setText] = useState(post.text);
-  const channels = useListChannels(); const publish = usePublishPost(); const [selectedChannels, setSelectedChannels] = useState<number[]>([]);
-  const publishNow = () => publish.mutate(
-    { data: { postId: post.id, channelIds: selectedChannels } },
-    {
-      onSuccess: (result) => {
-        const failed = result.results?.filter((item) => item.status === 'failed') ?? [];
-        if (failed.length) toast.error(`Не удалось опубликовать на ${failed.length} площадках`);
-        else {
-          toast.success('Материал опубликован');
-          onClose();
-        }
-      },
-      onError: (error) => toast.error(errorText(error, 'Публикация не выполнена')),
-    },
-  );
-  return <div className="fixed inset-0 z-50 flex justify-end bg-sidebar/40"><div className="h-full w-full max-w-2xl overflow-y-auto bg-card p-6 shadow-2xl md:p-9"><div className="flex items-start justify-between"><div><div className="font-mono text-[10px] uppercase tracking-[.2em] text-primary">Редактор / вариант {post.variant}</div><h2 className="mt-2 text-2xl font-extrabold tracking-[-.04em]">Довести до публикации</h2></div><button onClick={onClose} className="rounded p-2 text-muted-foreground hover:bg-muted" data-testid="button-close-editor"><X size={20} /></button></div><div className="mt-8 space-y-5"><Field label="Заголовок" value={title} onChange={setTitle} testId="input-edit-post-title" /><Field label="Текст" value={text} onChange={setText} textarea testId="textarea-edit-post-text" /><div className="rounded-md bg-muted p-4"><div className="flex items-center justify-between"><span className="font-mono text-[10px] uppercase tracking-[.15em] text-muted-foreground">Параметры</span><Badge>{post.format}</Badge></div><p className="mt-3 text-xs text-muted-foreground">Цель: <span className="font-semibold text-foreground">{post.goal}</span> · создан {fmtDateTime(post.createdAt)}</p></div>{channels.data?.length ? <div className="rounded-md border border-border p-4"><div className="flex items-center justify-between"><div><div className="text-sm font-bold">Опубликовать сейчас</div><p className="mt-1 text-xs text-muted-foreground">Выберите подключённые площадки.</p></div><Send size={17} className="text-accent" /></div><div className="mt-3 grid gap-2 sm:grid-cols-2">{channels.data.map((channel) => <label key={channel.id} className="flex cursor-pointer items-center gap-2 rounded border border-border px-3 py-2 text-xs font-semibold hover:border-primary/50"><input type="checkbox" checked={selectedChannels.includes(channel.id)} onChange={(e) => setSelectedChannels((items) => e.target.checked ? [...items, channel.id] : items.filter((id) => id !== channel.id))} />{platformLabel(channel.platform)} · {channel.name}</label>)}</div><Button onClick={publishNow} disabled={publish.isPending || !selectedChannels.length} className="mt-3 w-full"><Send size={15} />{publish.isPending ? 'Публикуем…' : 'Опубликовать сейчас'}</Button></div> : <div className="rounded-md bg-muted p-4 text-xs text-muted-foreground">Подключите каналы в настройках, чтобы публиковать без ручного копирования.</div>}</div><div className="mt-8 flex flex-wrap gap-2 border-t border-border pt-5"><Button onClick={() => onUpdate({ title, text, status: 'approved' })} disabled={busy} data-testid="button-approve-post"><Check size={15} />Одобрить</Button><Button variant="outline" onClick={() => onUpdate({ title, text, status: 'draft' })} disabled={busy} data-testid="button-save-draft"><FileText size={15} />Сохранить черновик</Button><Button variant="quiet" onClick={onRegenerate} disabled={busy} data-testid="button-regenerate-post"><RefreshCw size={15} />Перегенерировать</Button></div></div></div>;
+function PostEditor({ post, onClose, onUpdate, onRegenerate, busy }: { post: Post; onClose: () => void; onUpdate: (data: { title?: string; goal?: string; format?: string; text?: string; status?: string }, options?: { close?: boolean; onSuccess?: () => void }) => void; onRegenerate: () => void; busy: boolean }) {
+  const [title, setTitle] = useState(post.title);
+  const [goal, setGoal] = useState(post.goal);
+  const [format, setFormat] = useState(post.format);
+  const [text, setText] = useState(post.text);
+  const [preview, setPreview] = useState(false);
+  const channels = useListChannels();
+  const publish = usePublishPost();
+  const [selectedChannels, setSelectedChannels] = useState<number[]>([]);
+  const formData = { title, goal, format, text };
+  const save = (status?: string, options?: { close?: boolean; onSuccess?: () => void }) => onUpdate({ ...formData, ...(status ? { status } : {}) }, options);
+  const publishNow = () => {
+    if (!selectedChannels.length) {
+      toast.error('Выберите хотя бы одну площадку');
+      return;
+    }
+    save(undefined, {
+      close: false,
+      onSuccess: () => publish.mutate(
+        { data: { postId: post.id, channelIds: selectedChannels } },
+        {
+          onSuccess: (result) => {
+            const failed = result.results?.filter((item) => item.status === 'failed') ?? [];
+            if (failed.length) toast.error(`Не удалось опубликовать на ${failed.length} площадках`);
+            else {
+              toast.success('Материал опубликован');
+              onClose();
+            }
+          },
+          onError: (error) => toast.error(errorText(error, 'Публикация не выполнена')),
+        },
+      ),
+    });
+  };
+  const editorContent = <div className="space-y-5">
+    <div className="grid gap-4 sm:grid-cols-[1.5fr_1fr]">
+      <Field label="Заголовок" value={title} onChange={setTitle} placeholder="Заголовок публикации" required testId="input-edit-post-title" />
+      <label>
+        <span className="mb-2 block text-xs font-bold">Цель публикации</span>
+        <select value={goal} onChange={(e) => setGoal(e.target.value)} className="w-full rounded-md border border-input bg-background px-3 py-2.5 text-sm outline-none focus:border-primary" data-testid="select-edit-post-goal">
+          <option>Вовлечение</option><option>Продажа</option><option>Доверие</option><option>Охват</option>
+        </select>
+      </label>
+    </div>
+    <label>
+      <span className="mb-2 block text-xs font-bold">Формат</span>
+      <select value={format} onChange={(e) => setFormat(e.target.value)} className="w-full rounded-md border border-input bg-background px-3 py-2.5 text-sm outline-none focus:border-primary" data-testid="select-edit-post-format">
+        <option>Пост</option><option>Карусель</option><option>Короткое видео</option><option>История</option>
+      </select>
+    </label>
+    <label className="block">
+      <div className="mb-2 flex items-center justify-between gap-3">
+        <span className="text-xs font-bold">Текст публикации</span>
+        <span className={cn('font-mono text-[10px] uppercase tracking-[.12em]', text.length > 4000 ? 'text-destructive' : 'text-muted-foreground')}>{text.length.toLocaleString('ru-RU')} знаков</span>
+      </div>
+      <textarea value={text} onChange={(e) => setText(e.target.value)} placeholder="Напишите текст публикации…" rows={16} className="w-full resize-y rounded-md border border-input bg-background px-4 py-3 text-sm leading-relaxed outline-none placeholder:text-muted-foreground/65 focus:border-primary focus:ring-2 focus:ring-primary/15" data-testid="textarea-edit-post-text" />
+      <p className="mt-2 text-xs text-muted-foreground">Редактор сохраняет переносы строк и отправляет в публикацию именно эту версию текста.</p>
+    </label>
+    <div className="flex items-center justify-between rounded-md bg-muted px-4 py-3">
+      <div><span className="font-mono text-[10px] uppercase tracking-[.15em] text-muted-foreground">Параметры</span><p className="mt-1 text-xs text-muted-foreground">Вариант {post.variant} · создан {fmtDateTime(post.createdAt)}</p></div>
+      <Badge>{format}</Badge>
+    </div>
+  </div>;
+  return <div className="fixed inset-0 z-50 flex justify-end bg-sidebar/40" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
+    <div className="flex h-full w-full max-w-3xl flex-col bg-card shadow-2xl">
+      <div className="flex items-start justify-between border-b border-border px-6 py-5 md:px-9">
+        <div><div className="font-mono text-[10px] uppercase tracking-[.2em] text-primary">Редактор / вариант {post.variant}</div><h2 className="mt-2 text-2xl font-extrabold tracking-[-.04em]">Редактировать публикацию</h2><p className="mt-1 text-sm text-muted-foreground">Подготовьте финальную версию перед одобрением или выходом в канал.</p></div>
+        <button onClick={onClose} className="rounded p-2 text-muted-foreground hover:bg-muted" data-testid="button-close-editor"><X size={20} /></button>
+      </div>
+      <div className="flex-1 overflow-y-auto px-6 py-6 md:px-9">
+        <div className="mb-5 flex items-center justify-between gap-3">
+          <div><span className="text-sm font-bold">{preview ? 'Предпросмотр' : 'Рабочая версия'}</span><p className="mt-1 text-xs text-muted-foreground">{preview ? 'Так текст будет выглядеть в публикации.' : 'Изменения можно сохранить в любой момент.'}</p></div>
+          <Button type="button" variant="outline" onClick={() => setPreview((value) => !value)} data-testid="button-toggle-post-preview">{preview ? 'Вернуться к редактору' : 'Предпросмотр'}</Button>
+        </div>
+        {preview ? <article className="rounded-xl border border-border bg-background p-6 shadow-sm md:p-8"><div className="flex items-center gap-2 text-xs text-muted-foreground"><span className="grid size-7 place-items-center rounded-full bg-primary text-primary-foreground"><FileText size={14} /></span><span>{format} · {goal}</span></div><h3 className="mt-6 text-2xl font-extrabold leading-tight tracking-[-.03em]">{title || 'Без заголовка'}</h3><div className="mt-5 whitespace-pre-wrap text-sm leading-7 text-foreground/85">{text || 'Текст публикации пока пуст.'}</div></article> : editorContent}
+        {!preview && (channels.data?.length ? <div className="mt-7 rounded-md border border-border p-4"><div className="flex items-center justify-between"><div><div className="text-sm font-bold">Каналы публикации</div><p className="mt-1 text-xs text-muted-foreground">Выберите площадки для кнопки «Опубликовать».</p></div><Send size={17} className="text-accent" /></div><div className="mt-3 grid gap-2 sm:grid-cols-2">{channels.data.map((channel) => <label key={channel.id} className="flex cursor-pointer items-center gap-2 rounded border border-border px-3 py-2 text-xs font-semibold hover:border-primary/50"><input type="checkbox" checked={selectedChannels.includes(channel.id)} onChange={(e) => setSelectedChannels((items) => e.target.checked ? [...items, channel.id] : items.filter((id) => id !== channel.id))} />{platformLabel(channel.platform)} · {channel.name}</label>)}</div></div> : <div className="mt-7 rounded-md bg-muted p-4 text-xs text-muted-foreground">Подключите каналы в настройках, чтобы публиковать без ручного копирования.</div>)}
+      </div>
+      <div className="flex flex-wrap items-center gap-2 border-t border-border bg-card px-6 py-4 md:px-9">
+        <Button onClick={() => save()} disabled={busy} data-testid="button-save-post"><FileText size={15} />Сохранить</Button>
+        <Button variant="outline" onClick={() => save('approved')} disabled={busy} data-testid="button-approve-post"><Check size={15} />Одобрить</Button>
+        <Button variant="outline" onClick={publishNow} disabled={busy || publish.isPending || !selectedChannels.length} data-testid="button-publish-post"><Send size={15} />{publish.isPending ? 'Публикуем…' : 'Опубликовать'}</Button>
+        <Button variant="quiet" onClick={onRegenerate} disabled={busy} className="ml-auto" data-testid="button-regenerate-post"><RefreshCw size={15} />Перегенерировать</Button>
+      </div>
+    </div>
+  </div>;
 }
 
 function RadarPage() {

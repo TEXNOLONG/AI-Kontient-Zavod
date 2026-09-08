@@ -238,6 +238,8 @@ export const UpdatePostParams = zod.object({
 
 export const UpdatePostBody = zod.object({
   "title": zod.string().optional(),
+  "goal": zod.string().optional(),
+  "format": zod.string().optional(),
   "text": zod.string().optional(),
   "status": zod.string().optional()
 })
