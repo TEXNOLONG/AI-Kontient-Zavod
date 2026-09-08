@@ -1,5 +1,6 @@
 import app from "./app";
 import { logger } from "./lib/logger";
+import { processDuePublishingJobs } from "./routes/publishing";
 
 const rawPort = process.env["PORT"];
 
@@ -22,4 +23,8 @@ app.listen(port, (err) => {
   }
 
   logger.info({ port }, "Server listening");
+  const timer = setInterval(() => {
+    void processDuePublishingJobs().catch((error) => logger.error({ err: error }, "Publishing queue failed"));
+  }, 30_000);
+  timer.unref();
 });

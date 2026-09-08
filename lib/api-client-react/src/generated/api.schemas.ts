@@ -118,6 +118,7 @@ export interface ScheduleInput {
   /** @pattern ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ */
   date: string;
   time: string;
+  channelIds?: number[];
 }
 
 export interface ScheduleUpdate {
@@ -134,6 +135,84 @@ export interface Dashboard {
   scheduledPosts: number;
   radarIdeas: number;
   recentPosts: Post[];
+}
+
+export type SocialChannelPlatform = typeof SocialChannelPlatform[keyof typeof SocialChannelPlatform];
+
+
+export const SocialChannelPlatform = {
+  vk: 'vk',
+  ok: 'ok',
+  max: 'max',
+  telegram: 'telegram',
+  zen: 'zen',
+} as const;
+
+export interface SocialChannel {
+  id: number;
+  platform: SocialChannelPlatform;
+  name: string;
+  target: string;
+  status: string;
+  /** @nullable */
+  lastError?: string | null;
+  createdAt: string;
+}
+
+export type SocialChannelInputPlatform = typeof SocialChannelInputPlatform[keyof typeof SocialChannelInputPlatform];
+
+
+export const SocialChannelInputPlatform = {
+  vk: 'vk',
+  ok: 'ok',
+  max: 'max',
+  telegram: 'telegram',
+  zen: 'zen',
+} as const;
+
+export interface SocialChannelInput {
+  platform: SocialChannelInputPlatform;
+  /** @minLength 1 */
+  name: string;
+  /** @minLength 1 */
+  target: string;
+  /** @minLength 1 */
+  token: string;
+  applicationKey?: string;
+  applicationSecret?: string;
+  sessionSecret?: string;
+}
+
+export interface PublishingJob {
+  id: number;
+  postId: number;
+  channelId: number;
+  scheduledAt: string;
+  status: string;
+  /** @nullable */
+  externalId?: string | null;
+  /** @nullable */
+  error?: string | null;
+  /** @nullable */
+  publishedAt?: string | null;
+}
+
+export interface PublishInput {
+  postId: number;
+  /** @minItems 1 */
+  channelIds: number[];
+}
+
+export type PublishResultResultsItem = {
+  channelId: number;
+  status: string;
+  /** @nullable */
+  externalId?: string | null;
+  error?: string;
+};
+
+export interface PublishResult {
+  results: PublishResultResultsItem[];
 }
 
 export type ListPostsParams = {
@@ -153,5 +232,10 @@ projectId: number;
 
 export type ListScheduleParams = {
 projectId: number;
+};
+
+export type TestChannel200 = {
+  ok: boolean;
+  message: string;
 };
 

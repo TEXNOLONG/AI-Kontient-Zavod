@@ -34,10 +34,16 @@ import type {
   Project,
   ProjectInput,
   ProjectUpdate,
+  PublishInput,
+  PublishResult,
+  PublishingJob,
   ScheduleInput,
   ScheduleItem,
   ScheduleUpdate,
-  SyncInput
+  SocialChannel,
+  SocialChannelInput,
+  SyncInput,
+  TestChannel200
 } from './api.schemas';
 
 import { customFetch } from '../custom-fetch';
@@ -1340,5 +1346,443 @@ export const useUpdateSchedule = <TError = ErrorType<unknown>,
         TContext
       > => {
       return useMutation(getUpdateScheduleMutationOptions(options));
+    }
+
+export const getListChannelsUrl = () => {
+
+
+
+
+  return `/api/channels`
+}
+
+/**
+ * @summary List connected social channels
+ */
+export const listChannels = async ( options?: Parameters<typeof customFetch>[1]): Promise<SocialChannel[]> => {
+
+  return customFetch<SocialChannel[]>(getListChannelsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListChannelsQueryKey = () => {
+    return [
+    `/api/channels`
+    ] as const;
+    }
+
+
+export const getListChannelsQueryOptions = <TData = Awaited<ReturnType<typeof listChannels>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listChannels>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListChannelsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listChannels>>> = ({ signal }) => listChannels({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listChannels>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListChannelsQueryResult = NonNullable<Awaited<ReturnType<typeof listChannels>>>
+export type ListChannelsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List connected social channels
+ */
+
+export function useListChannels<TData = Awaited<ReturnType<typeof listChannels>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listChannels>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListChannelsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getCreateChannelUrl = () => {
+
+
+
+
+  return `/api/channels`
+}
+
+/**
+ * @summary Connect a social channel
+ */
+export const createChannel = async (socialChannelInput: SocialChannelInput, options?: Parameters<typeof customFetch>[1]): Promise<SocialChannel> => {
+
+  return customFetch<SocialChannel>(getCreateChannelUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(socialChannelInput)
+  }
+);}
+
+
+
+
+
+export const getCreateChannelMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createChannel>>, TError,{data: BodyType<SocialChannelInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createChannel>>, TError,{data: BodyType<SocialChannelInput>}, TContext> => {
+
+const mutationKey = ['createChannel'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createChannel>>, {data: BodyType<SocialChannelInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createChannel(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateChannelMutationResult = NonNullable<Awaited<ReturnType<typeof createChannel>>>
+    export type CreateChannelMutationBody = BodyType<SocialChannelInput>
+    export type CreateChannelMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Connect a social channel
+ */
+export const useCreateChannel = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createChannel>>, TError,{data: BodyType<SocialChannelInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createChannel>>,
+        TError,
+        {data: BodyType<SocialChannelInput>},
+        TContext
+      > => {
+      return useMutation(getCreateChannelMutationOptions(options));
+    }
+
+export const getDeleteChannelUrl = (id: number,) => {
+
+
+
+
+  return `/api/channels/${id}`
+}
+
+/**
+ * @summary Disconnect a social channel
+ */
+export const deleteChannel = async (id: number, options?: Parameters<typeof customFetch>[1]): Promise<void> => {
+
+  return customFetch<void>(getDeleteChannelUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getDeleteChannelMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteChannel>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteChannel>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['deleteChannel'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteChannel>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteChannel(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteChannelMutationResult = NonNullable<Awaited<ReturnType<typeof deleteChannel>>>
+
+    export type DeleteChannelMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Disconnect a social channel
+ */
+export const useDeleteChannel = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteChannel>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteChannel>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getDeleteChannelMutationOptions(options));
+    }
+
+export const getTestChannelUrl = (id: number,) => {
+
+
+
+
+  return `/api/channels/${id}/test`
+}
+
+/**
+ * @summary Check a social channel connection
+ */
+export const testChannel = async (id: number, options?: Parameters<typeof customFetch>[1]): Promise<TestChannel200> => {
+
+  return customFetch<TestChannel200>(getTestChannelUrl(id),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getTestChannelMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof testChannel>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof testChannel>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['testChannel'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof testChannel>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  testChannel(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type TestChannelMutationResult = NonNullable<Awaited<ReturnType<typeof testChannel>>>
+
+    export type TestChannelMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Check a social channel connection
+ */
+export const useTestChannel = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof testChannel>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof testChannel>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getTestChannelMutationOptions(options));
+    }
+
+export const getListPublishingJobsUrl = () => {
+
+
+
+
+  return `/api/publishing/jobs`
+}
+
+/**
+ * @summary List publishing jobs
+ */
+export const listPublishingJobs = async ( options?: Parameters<typeof customFetch>[1]): Promise<PublishingJob[]> => {
+
+  return customFetch<PublishingJob[]>(getListPublishingJobsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListPublishingJobsQueryKey = () => {
+    return [
+    `/api/publishing/jobs`
+    ] as const;
+    }
+
+
+export const getListPublishingJobsQueryOptions = <TData = Awaited<ReturnType<typeof listPublishingJobs>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listPublishingJobs>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListPublishingJobsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listPublishingJobs>>> = ({ signal }) => listPublishingJobs({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listPublishingJobs>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListPublishingJobsQueryResult = NonNullable<Awaited<ReturnType<typeof listPublishingJobs>>>
+export type ListPublishingJobsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List publishing jobs
+ */
+
+export function useListPublishingJobs<TData = Awaited<ReturnType<typeof listPublishingJobs>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listPublishingJobs>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListPublishingJobsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getPublishPostUrl = () => {
+
+
+
+
+  return `/api/publishing/publish`
+}
+
+/**
+ * @summary Publish a post to selected channels now
+ */
+export const publishPost = async (publishInput: PublishInput, options?: Parameters<typeof customFetch>[1]): Promise<PublishResult> => {
+
+  return customFetch<PublishResult>(getPublishPostUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(publishInput)
+  }
+);}
+
+
+
+
+
+export const getPublishPostMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof publishPost>>, TError,{data: BodyType<PublishInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof publishPost>>, TError,{data: BodyType<PublishInput>}, TContext> => {
+
+const mutationKey = ['publishPost'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof publishPost>>, {data: BodyType<PublishInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  publishPost(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PublishPostMutationResult = NonNullable<Awaited<ReturnType<typeof publishPost>>>
+    export type PublishPostMutationBody = BodyType<PublishInput>
+    export type PublishPostMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Publish a post to selected channels now
+ */
+export const usePublishPost = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof publishPost>>, TError,{data: BodyType<PublishInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof publishPost>>,
+        TError,
+        {data: BodyType<PublishInput>},
+        TContext
+      > => {
+      return useMutation(getPublishPostMutationOptions(options));
     }
 

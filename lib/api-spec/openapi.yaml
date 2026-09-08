@@ -20,6 +20,8 @@ tags:
     description: Competitor radar
   - name: calendar
     description: Publication planning
+  - name: publishing
+    description: Connected social channels and automatic publishing
 paths:
   /healthz:
     get:
@@ -320,6 +322,97 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ScheduleItem"
+  /channels:
+    get:
+      operationId: listChannels
+      tags: [publishing]
+      summary: List connected social channels
+      responses:
+        "200":
+          description: Connected channels
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SocialChannel"
+    post:
+      operationId: createChannel
+      tags: [publishing]
+      summary: Connect a social channel
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SocialChannelInput"
+      responses:
+        "201":
+          description: Connected channel
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SocialChannel"
+  /channels/{id}:
+    delete:
+      operationId: deleteChannel
+      tags: [publishing]
+      summary: Disconnect a social channel
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "204":
+          description: Disconnected
+  /channels/{id}/test:
+    post:
+      operationId: testChannel
+      tags: [publishing]
+      summary: Check a social channel connection
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Connection check
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ok, message]
+                properties:
+                  ok: { type: boolean }
+                  message: { type: string }
+  /publishing/jobs:
+    get:
+      operationId: listPublishingJobs
+      tags: [publishing]
+      summary: List publishing jobs
+      responses:
+        "200":
+          description: Publishing queue
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PublishingJob"
+  /publishing/publish:
+    post:
+      operationId: publishPost
+      tags: [publishing]
+      summary: Publish a post to selected channels now
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PublishInput"
+      responses:
+        "200":
+          description: Publication results
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublishResult"
 components:
   parameters:
     Id:
@@ -456,6 +549,9 @@ components:
         postId: { type: integer }
         date: { type: string, pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" }
         time: { type: string }
+        channelIds:
+          type: array
+          items: { type: integer }
     ScheduleUpdate:
       type: object
       properties:
@@ -476,4 +572,65 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Post"
+    SocialChannel:
+      type: object
+      required: [id, platform, name, target, status, createdAt]
+      properties:
+        id: { type: integer }
+        platform:
+          type: string
+          enum: [vk, ok, max, telegram, zen]
+        name: { type: string }
+        target: { type: string }
+        status: { type: string }
+        lastError: { type: [string, "null"] }
+        createdAt: { type: string, format: date-time }
+    SocialChannelInput:
+      type: object
+      required: [platform, name, target, token]
+      properties:
+        platform:
+          type: string
+          enum: [vk, ok, max, telegram, zen]
+        name: { type: string, minLength: 1 }
+        target: { type: string, minLength: 1 }
+        token: { type: string, minLength: 1 }
+        applicationKey: { type: string }
+        applicationSecret: { type: string }
+        sessionSecret: { type: string }
+    PublishingJob:
+      type: object
+      required: [id, postId, channelId, scheduledAt, status]
+      properties:
+        id: { type: integer }
+        postId: { type: integer }
+        channelId: { type: integer }
+        scheduledAt: { type: string, format: date-time }
+        status: { type: string }
+        externalId: { type: [string, "null"] }
+        error: { type: [string, "null"] }
+        publishedAt: { type: [string, "null"], format: date-time }
+    PublishInput:
+      type: object
+      required: [postId, channelIds]
+      properties:
+        postId: { type: integer }
+        channelIds:
+          type: array
+          minItems: 1
+          items: { type: integer }
+    PublishResult:
+      type: object
+      required: [results]
+      properties:
+        results:
+          type: array
+          items:
+            type: object
+            required: [channelId, status]
+            properties:
+              channelId: { type: integer }
+              status: { type: string }
+              externalId: { type: [string, "null"] }
+              error: { type: string }
 

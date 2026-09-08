@@ -7,6 +7,7 @@ import {
   postsTable,
   projectsTable,
   scheduleTable,
+  publishingJobsTable,
 } from "@workspace/db";
 import {
   AnalyzeProjectBody,
@@ -47,6 +48,7 @@ import {
   UpdateScheduleResponse,
 } from "@workspace/api-zod";
 import { askMistralJson } from "../lib/mistral";
+import { currentSession } from "./auth";
 
 const router: IRouter = Router();
 
@@ -617,6 +619,18 @@ router.post("/calendar", async (req, res): Promise<void> => {
     .update(postsTable)
     .set({ status: "scheduled" })
     .where(eq(postsTable.id, body.data.postId));
+  if (body.data.channelIds?.length) {
+    const scheduledAt = new Date(`${body.data.date}T${body.data.time}:00`);
+    await db.insert(publishingJobsTable).values(
+      body.data.channelIds.map((channelId) => ({
+        userId: currentSession(req)?.id ?? "",
+        postId: body.data.postId,
+        channelId,
+        scheduledAt,
+        status: "pending",
+      })),
+    );
+  }
   const result = (await scheduleDto(body.data.projectId)).find(
     (candidate) => candidate.id === item.id,
   );

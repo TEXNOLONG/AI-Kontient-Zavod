@@ -1,6 +1,6 @@
-# [Project name]
+# AI Контент Завод
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+Контентная система для создания Brand DNA, генерации публикаций и автоматического выхода постов в подключённые соцсети.
 
 ## Run & Operate
 
@@ -10,6 +10,8 @@ _Replace the heading above with the project's name, and this line with one sente
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
 - `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
 - Required env: `DATABASE_URL` — Postgres connection string
+- Required env: `SESSION_SECRET` — signing key for email login sessions and encryption of channel credentials
+- Optional env: `MISTRAL_API_KEY`
 
 ## Stack
 
@@ -22,23 +24,38 @@ _Replace the heading above with the project's name, and this line with one sente
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/ai-content-factory` — React/Vite product UI
+- `artifacts/api-server/src/routes/content.ts` — projects, content and calendar API
+- `artifacts/api-server/src/routes/publishing.ts` — channel connections, immediate publishing and queue processing
+- `artifacts/api-server/src/lib/publishing.ts` — provider adapters and credential encryption
+- `lib/db/src/schema/content.ts` — projects, posts and calendar tables
+- `lib/db/src/schema/publishing.ts` — social channel and publishing queue tables
+- `lib/api-spec/openapi.yaml` — API source of truth; regenerate clients with `pnpm --filter @workspace/api-spec run codegen`
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- Channel credentials are encrypted with AES-256-GCM using `SESSION_SECRET` and are never returned to the browser.
+- Publishing jobs are created per post and per channel; a server timer processes due jobs every 30 seconds.
+- VK, OK, Telegram and MAX use their official HTTP APIs. Dзен is represented by an HTTPS webhook bridge because there is no universal public publishing API in this integration.
+- Social channels and publishing jobs are scoped to the authenticated email account; login credentials are not reused as destination channel tokens.
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+- Register and sign in with email, then connect VK, Одноклассники, MAX, Telegram and Дзен channels from Настройки.
+- Publish an approved post immediately from the editor.
+- Schedule an approved post for selected channels from Календарь.
+- Generate and edit content, maintain a brand profile, and monitor competitor ideas.
 
 ## User preferences
 
-_Populate as you build — explicit user instructions worth remembering across sessions._
+_No explicit preferences recorded._
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- Run the database schema push after adding or changing tables.
+- MAX requires a bot token and chat/channel ID; Telegram requires a bot token and chat ID.
+- OK requires an access token, application key and application secret.
+- Dзен requires an HTTPS webhook bridge that accepts `{ title, text, channel }`.
 
 ## Pointers
 

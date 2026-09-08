@@ -394,7 +394,8 @@ export const SchedulePostBody = zod.object({
   "projectId": zod.number().int(),
   "postId": zod.number().int(),
   "date": zod.string().regex(schedulePostBodyDateRegExp),
-  "time": zod.string()
+  "time": zod.string(),
+  "channelIds": zod.array(zod.number().int()).optional()
 })
 
 export const schedulePostResponseDateRegExp = new RegExp('^[0-9]{4}-[0-9]{2}-[0-9]{2}$');
@@ -460,6 +461,110 @@ export const UpdateScheduleResponse = zod.object({
   "variant": zod.number().int(),
   "createdAt": zod.coerce.date()
 })
+})
+
+
+/**
+ * @summary List connected social channels
+ */
+export const ListChannelsResponseItem = zod.object({
+  "id": zod.number().int(),
+  "platform": zod.enum(['vk', 'ok', 'max', 'telegram', 'zen']),
+  "name": zod.string(),
+  "target": zod.string(),
+  "status": zod.string(),
+  "lastError": zod.string().nullish(),
+  "createdAt": zod.coerce.date()
+})
+export const ListChannelsResponse = zod.array(ListChannelsResponseItem)
+
+
+/**
+ * @summary Connect a social channel
+ */
+
+
+
+
+
+export const CreateChannelBody = zod.object({
+  "platform": zod.enum(['vk', 'ok', 'max', 'telegram', 'zen']),
+  "name": zod.string().min(1),
+  "target": zod.string().min(1),
+  "token": zod.string().min(1),
+  "applicationKey": zod.string().optional(),
+  "applicationSecret": zod.string().optional(),
+  "sessionSecret": zod.string().optional()
+})
+
+export const CreateChannelResponse = zod.object({
+  "id": zod.number().int(),
+  "platform": zod.enum(['vk', 'ok', 'max', 'telegram', 'zen']),
+  "name": zod.string(),
+  "target": zod.string(),
+  "status": zod.string(),
+  "lastError": zod.string().nullish(),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Disconnect a social channel
+ */
+export const DeleteChannelParams = zod.object({
+  "id": zod.coerce.number().int()
+})
+
+export const DeleteChannelResponse = zod.void()
+
+
+/**
+ * @summary Check a social channel connection
+ */
+export const TestChannelParams = zod.object({
+  "id": zod.coerce.number().int()
+})
+
+export const TestChannelResponse = zod.object({
+  "ok": zod.boolean(),
+  "message": zod.string()
+})
+
+
+/**
+ * @summary List publishing jobs
+ */
+export const ListPublishingJobsResponseItem = zod.object({
+  "id": zod.number().int(),
+  "postId": zod.number().int(),
+  "channelId": zod.number().int(),
+  "scheduledAt": zod.coerce.date(),
+  "status": zod.string(),
+  "externalId": zod.string().nullish(),
+  "error": zod.string().nullish(),
+  "publishedAt": zod.coerce.date().nullish()
+})
+export const ListPublishingJobsResponse = zod.array(ListPublishingJobsResponseItem)
+
+
+/**
+ * @summary Publish a post to selected channels now
+ */
+
+
+
+export const PublishPostBody = zod.object({
+  "postId": zod.number().int(),
+  "channelIds": zod.array(zod.number().int()).min(1)
+})
+
+export const PublishPostResponse = zod.object({
+  "results": zod.array(zod.object({
+  "channelId": zod.number().int(),
+  "status": zod.string(),
+  "externalId": zod.string().nullish(),
+  "error": zod.string().optional()
+}))
 })
 
 
