@@ -59,6 +59,16 @@ async function responseId(response: Response): Promise<string | undefined> {
   return String(payload.post_id ?? payload.message_id ?? payload.message?.body?.mid ?? payload.id ?? "");
 }
 
+function describeMaxNetworkError(error: unknown): Error {
+  const cause = error instanceof Error && error.cause instanceof Error
+    ? error.cause
+    : error instanceof Error
+      ? error
+      : new Error(String(error));
+  const code = "code" in cause && typeof cause.code === "string" ? ` (${cause.code})` : "";
+  return new Error(`MAX API network/TLS error${code}: ${cause.message}`);
+}
+
 async function publishVk(channel: SocialChannel, text: string, credentials: ChannelCredentials) {
   const params = new URLSearchParams({
     owner_id: channel.target,
@@ -83,17 +93,46 @@ async function publishTelegram(channel: SocialChannel, text: string, credentials
 }
 
 async function publishMax(channel: SocialChannel, text: string, credentials: ChannelCredentials) {
+  if (text.length > 4_000) {
+    throw new Error(`MAX ограничивает длину сообщения 4000 символами; сейчас ${text.length}`);
+  }
   const params = new URLSearchParams({ chat_id: channel.target });
-  const response = await fetch(`https://platform-api2.max.ru/messages?${params}`, {
-    method: "POST",
-    headers: {
-      Authorization: credentials.token ?? "",
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ text }),
-    signal: AbortSignal.timeout(15_000),
-  });
-  return responseId(response);
+  try {
+    const response = await fetch(`https://platform-api2.max.ru/messages?${params}`, {
+      method: "POST",
+      headers: {
+        Authorization: credentials.token ?? "",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ text }),
+      signal: AbortSignal.timeout(15_000),
+    });
+    if (!response.ok) {
+      const body = await response.text();
+      let detail = body;
+      try {
+        const payload = JSON.parse(body) as {
+          error?: unknown;
+          error_msg?: unknown;
+          description?: unknown;
+        };
+        const nestedError = typeof payload.error === "object" && payload.error !== null
+          ? JSON.stringify(payload.error)
+          : payload.error;
+        detail = String(nestedError ?? payload.error_msg ?? payload.description ?? body);
+      } catch {
+        // Keep the raw response body when MAX does not return JSON.
+      }
+      throw new Error(`MAX API HTTP ${response.status}: ${detail.slice(0, 500)}`);
+    }
+    return responseId(response);
+  } catch (error) {
+    if (error instanceof Error && error.message.startsWith("MAX API HTTP")) throw error;
+    if (error instanceof Error && error.name === "TimeoutError") {
+      throw new Error("MAX API timeout after 15 seconds");
+    }
+    throw describeMaxNetworkError(error);
+  }
 }
 
 function md5(value: string): string {
