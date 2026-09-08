@@ -22,6 +22,7 @@ timeoutMs = 20000
 [userenv]
 
 [userenv.shared]
+MISTRAL_API_KEY = "MGUB4PCqHpw8LNDdLkKH3tDf4v5YN087"
 
 [nix]
 channel = "stable-25_05"
