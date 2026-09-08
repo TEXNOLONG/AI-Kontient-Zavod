@@ -45,8 +45,17 @@ async function responseId(response: Response): Promise<string | undefined> {
     message?: { body?: { mid?: unknown } };
     id?: unknown;
     error?: unknown;
+    error_msg?: unknown;
+    description?: unknown;
   };
-  if (!response.ok) throw new Error(typeof payload.error === "string" ? payload.error : `HTTP ${response.status}`);
+  if (!response.ok || payload.error || payload.error_msg) {
+    const nestedError = typeof payload.error === "object" && payload.error !== null
+      ? JSON.stringify(payload.error)
+      : payload.error;
+    throw new Error(
+      String(nestedError ?? payload.error_msg ?? payload.description ?? `HTTP ${response.status}`),
+    );
+  }
   return String(payload.post_id ?? payload.message_id ?? payload.message?.body?.mid ?? payload.id ?? "");
 }
 

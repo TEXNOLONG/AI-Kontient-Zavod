@@ -8,6 +8,7 @@ import {
   projectsTable,
   scheduleTable,
   publishingJobsTable,
+  socialChannelsTable,
 } from "@workspace/db";
 import {
   AnalyzeProjectBody,
@@ -48,6 +49,7 @@ import {
   UpdateScheduleResponse,
 } from "@workspace/api-zod";
 import { askMistralJson } from "../lib/mistral";
+import { publishToChannel } from "../lib/publishing";
 import { currentSession } from "./auth";
 
 const router: IRouter = Router();
@@ -69,6 +71,26 @@ const seedAnalysis: BrandAnalysis = {
   usp: "Сложное становится понятным — и начинает работать на результат.",
   values: ["ясность", "скорость", "доверие"],
 };
+
+async function readSource(sourceUrl: string): Promise<string> {
+  try {
+    const response = await fetch(sourceUrl, {
+      headers: { "User-Agent": "AI-Content-Factory/1.0 (+brand-analysis)" },
+      signal: AbortSignal.timeout(10_000),
+    });
+    if (!response.ok) return "";
+    const html = await response.text();
+    return html
+      .replace(/<script[\s\S]*?<\/script>/gi, " ")
+      .replace(/<style[\s\S]*?<\/style>/gi, " ")
+      .replace(/<[^>]+>/g, " ")
+      .replace(/\s+/g, " ")
+      .trim()
+      .slice(0, 12_000);
+  } catch {
+    return "";
+  }
+}
 
 const seedPosts: PostDraft[] = [
   {
@@ -248,9 +270,20 @@ async function createPostDraft(
   format: string,
   variant: number,
 ): Promise<PostDraft> {
+  const tone = project.tone || seedAnalysis.tone;
+  const audience = project.audience || seedAnalysis.audience;
+  const usp = project.usp || seedAnalysis.usp;
   const fallback = {
-    title: topic.length > 42 ? `${topic.slice(0, 42)}…` : topic,
-    text: `${topic}\n\n${project.tone || seedAnalysis.tone} тон и конкретная польза для аудитории: ${project.audience || seedAnalysis.audience}`,
+    title: topic.length > 56 ? `${topic.slice(0, 56)}…` : topic,
+    text: [
+      `${topic}`,
+      "",
+      `Для ${audience.toLowerCase()} это не абстрактная идея, а практический шаг: начните с одного понятного действия и покажите, какой результат оно даёт.`,
+      "",
+      `${usp} Такой подход помогает перейти от общих обещаний к доказуемой пользе.`,
+      "",
+      `Сохраните этот принцип и проверьте его на ближайшем кейсе. ${tone} подача работает лучше, когда за ней стоит конкретика.`,
+    ].join("\n"),
   };
   return askMistralJson<PostDraft>(
     [
@@ -377,6 +410,7 @@ router.post("/projects/:id/analyze", async (req, res): Promise<void> => {
     return;
   }
 
+  const sourceText = await readSource(body.data.sourceUrl);
   const analysis = await askMistralJson<BrandAnalysis>(
     [
       {
@@ -389,6 +423,7 @@ router.post("/projects/:id/analyze", async (req, res): Promise<void> => {
         content: JSON.stringify({
           name: project.name,
           sourceUrl: body.data.sourceUrl,
+          sourceText,
           current: project,
         }),
       },
@@ -566,24 +601,42 @@ router.post("/competitors/sync", async (req, res): Promise<void> => {
     .from(competitorsTable)
     .where(eq(competitorsTable.projectId, body.data.projectId));
   for (const competitor of competitors) {
-    const existing = await db
-      .select({ id: competitorPostsTable.id })
-      .from(competitorPostsTable)
-      .where(eq(competitorPostsTable.competitorId, competitor.id));
-    if (!existing.length) {
-      await db.insert(competitorPostsTable).values([
+    const sourceText = await readSource(competitor.url);
+    const signals = await askMistralJson<Array<{ text: string; idea: string }>>(
+      [
         {
-          competitorId: competitor.id,
+          role: "system",
+          content:
+            "Ты аналитик контента. Из текста сайта выдели ровно 2 свежих контентных сигнала. Верни JSON-массив с объектами text и idea на русском. Не выдумывай факты, если текста мало — анализируй позиционирование и публичные формулировки.",
+        },
+        {
+          role: "user",
+          content: JSON.stringify({
+            competitor: competitor.name,
+            url: competitor.url,
+            sourceText,
+          }),
+        },
+      ],
+      [
+        {
           text: `${competitor.name}: свежий взгляд на то, как сделать продукт понятнее для клиента.`,
           idea: "Показать один практический принцип изнутри",
         },
         {
-          competitorId: competitor.id,
           text: "Сильные бренды объясняют не только что они делают, но и почему это важно сейчас.",
           idea: "Связать продукт с моментом клиента",
         },
-      ]);
-    }
+      ],
+    );
+    await db.delete(competitorPostsTable).where(eq(competitorPostsTable.competitorId, competitor.id));
+    await db.insert(competitorPostsTable).values(
+      signals.slice(0, 2).map((signal) => ({
+        competitorId: competitor.id,
+        text: signal.text,
+        idea: signal.idea,
+      })),
+    );
     await db
       .update(competitorsTable)
       .set({ lastSync: new Date() })
@@ -659,15 +712,63 @@ router.patch("/calendar/:id", async (req, res): Promise<void> => {
   const update: Partial<typeof scheduleTable.$inferInsert> = {};
   if (body.data.date !== undefined) update.scheduledDate = dateOnly(body.data.date);
   if (body.data.time !== undefined) update.time = body.data.time;
-  if (body.data.status !== undefined) update.status = body.data.status;
+  let requestedStatus = body.data.status;
+  if (requestedStatus === "published") {
+    const jobs = await db
+      .select()
+      .from(publishingJobsTable)
+      .where(
+        and(
+          eq(publishingJobsTable.postId, existing.postId),
+          eq(publishingJobsTable.userId, currentSession(req)?.id ?? ""),
+          eq(publishingJobsTable.status, "pending"),
+        ),
+      );
+    if (jobs.length) {
+      let published = 0;
+      for (const job of jobs) {
+        const [channel] = await db
+          .select()
+          .from(socialChannelsTable)
+          .where(
+            and(
+              eq(socialChannelsTable.id, job.channelId),
+              eq(socialChannelsTable.userId, currentSession(req)?.id ?? ""),
+            ),
+          );
+        if (!channel) continue;
+        try {
+          const [post] = await db.select().from(postsTable).where(eq(postsTable.id, existing.postId));
+          const externalId = await publishToChannel(channel, `${post?.title ?? ""}\n\n${post?.text ?? ""}`.trim());
+          await db.update(publishingJobsTable).set({
+            status: "published",
+            externalId,
+            publishedAt: new Date(),
+            error: null,
+          }).where(eq(publishingJobsTable.id, job.id));
+          published += 1;
+        } catch (error) {
+          await db.update(publishingJobsTable).set({
+            status: "failed",
+            error: error instanceof Error ? error.message : "Ошибка публикации",
+          }).where(eq(publishingJobsTable.id, job.id));
+        }
+      }
+      if (published) {
+        await db.update(postsTable).set({ status: "published" }).where(eq(postsTable.id, existing.postId));
+      }
+      requestedStatus = published ? "published" : "failed";
+    } else {
+      res.status(400).json({ error: "Для автопубликации сначала выберите подключённые каналы" });
+      return;
+    }
+  }
+  if (requestedStatus !== undefined) update.status = requestedStatus;
   const [item] = await db
     .update(scheduleTable)
     .set(update)
     .where(eq(scheduleTable.id, params.data.id))
     .returning();
-  if (body.data.status === "published") {
-    await db.update(postsTable).set({ status: "approved" }).where(eq(postsTable.id, item.postId));
-  }
   const result = (await scheduleDto(item.projectId)).find((candidate) => candidate.id === item.id);
   res.json(UpdateScheduleResponse.parse(result));
 });
