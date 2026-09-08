@@ -3,7 +3,7 @@ import { QueryClient, QueryClientProvider, useQueryClient } from '@tanstack/reac
 import {
   Activity, ArrowUpRight, Bell, CalendarDays, Check, ChevronRight, CircleHelp,
   Clock3, Command, Compass, FileText, Globe2, LayoutDashboard, Menu, Plus, RefreshCw,
-  Send, Settings2, Sparkles, Target, Users, X, Zap,
+  Send, Settings2, ShieldCheck, Sparkles, Target, Users, X, Zap,
 } from 'lucide-react';
 import {
   getGetProjectQueryKey, getListCompetitorsQueryKey,
@@ -23,7 +23,7 @@ import { Link, Route, Switch, Router as WouterRouter, useLocation } from 'wouter
 const queryClient = new QueryClient();
 
 const navItems = [
-  { href: '/', label: 'Обзор', icon: LayoutDashboard },
+  { href: '/app', label: 'Обзор', icon: LayoutDashboard },
   { href: '/projects', label: 'Проекты', icon: Target },
   { href: '/content', label: 'Контент', icon: FileText },
   { href: '/radar', label: 'Радар', icon: Compass },
@@ -78,6 +78,105 @@ function EmptyState({ icon: Icon, title, text, action }: { icon: typeof Sparkles
   </div>;
 }
 
+function BrandMark() {
+  return <span className="relative grid size-10 place-items-center rounded-md bg-primary text-sidebar"><Zap size={19} strokeWidth={2.8} /></span>;
+}
+
+function LandingPage() {
+  return <div className="landing-page min-h-[100dvh] overflow-hidden bg-background text-foreground">
+    <header className="relative z-10 mx-auto flex max-w-7xl items-center justify-between px-5 py-5 md:px-9">
+      <Link href="/" className="flex items-center gap-3" data-testid="link-landing-brand">
+        <BrandMark />
+        <span><span className="block text-[15px] font-extrabold tracking-tight">AI Контент</span><span className="font-mono text-[10px] uppercase tracking-[.16em] text-muted-foreground">завод / 01</span></span>
+      </Link>
+      <Link href="/login" className="inline-flex items-center gap-2 rounded-md border border-border bg-card px-4 py-2.5 text-sm font-bold transition hover:border-primary/50 hover:text-primary" data-testid="link-landing-login">Войти через VK <ArrowUpRight size={15} /></Link>
+    </header>
+    <main className="relative mx-auto max-w-7xl px-5 pb-16 pt-8 md:px-9 md:pt-14">
+      <div className="pointer-events-none absolute -right-40 top-0 size-[520px] rounded-full bg-primary/10 blur-3xl" />
+      <section className="grid items-center gap-10 lg:grid-cols-[.9fr_1.1fr] lg:gap-16">
+        <div className="relative z-10 max-w-xl animate-in">
+          <div className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/8 px-3 py-1.5 font-mono text-[10px] font-bold uppercase tracking-[.16em] text-accent"><span className="size-1.5 rounded-full bg-accent" />Контентная система для бизнеса</div>
+          <h1 className="mt-7 text-5xl font-extrabold leading-[.98] tracking-[-.065em] md:text-7xl">Контент, который звучит <span className="text-primary">как ваш бренд.</span></h1>
+          <p className="mt-6 max-w-lg text-lg leading-relaxed text-muted-foreground">AI‑Контент‑Завод изучает ваш бизнес, собирает ДНК бренда и превращает её в готовые публикации, идеи и контент‑план.</p>
+          <div className="mt-8 flex flex-wrap items-center gap-3">
+            <Link href="/login" className="inline-flex items-center gap-2 rounded-md bg-primary px-5 py-3 text-sm font-extrabold text-primary-foreground shadow-lg shadow-primary/20 transition hover:-translate-y-0.5 hover:brightness-95" data-testid="link-landing-start">Начать через VK <ArrowUpRight size={16} /></Link>
+            <span className="flex items-center gap-2 px-2 text-xs text-muted-foreground"><ShieldCheck size={15} className="text-accent" />Вход через VK</span>
+          </div>
+          <div className="mt-10 grid max-w-md grid-cols-3 gap-5 border-t border-border pt-5">
+            <div><div className="text-2xl font-extrabold tracking-[-.05em]">1</div><div className="mt-1 text-xs leading-snug text-muted-foreground">единая ДНК бренда</div></div>
+            <div><div className="text-2xl font-extrabold tracking-[-.05em]">3–5</div><div className="mt-1 text-xs leading-snug text-muted-foreground">вариантов на идею</div></div>
+            <div><div className="text-2xl font-extrabold tracking-[-.05em]">24/7</div><div className="mt-1 text-xs leading-snug text-muted-foreground">контентный ритм</div></div>
+          </div>
+        </div>
+        <div className="relative animate-in delay-1">
+          <div className="cover-art relative min-h-[500px] overflow-hidden rounded-2xl border border-sidebar-border bg-sidebar p-5 text-sidebar-foreground shadow-2xl shadow-sidebar/20 md:min-h-[620px] md:p-8">
+            <div className="absolute inset-0 opacity-25 [background-image:linear-gradient(rgba(255,255,255,.12)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.12)_1px,transparent_1px)] [background-size:32px_32px]" />
+            <div className="relative flex items-center justify-between"><div className="font-mono text-[10px] uppercase tracking-[.2em] text-sidebar-foreground/45">Контентный цех / live</div><span className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[.14em] text-accent"><span className="size-1.5 rounded-full bg-accent" />Система активна</span></div>
+            <div className="relative mt-14 grid gap-5 md:mt-20 md:grid-cols-[1fr_.72fr]">
+              <div className="rounded-xl border border-sidebar-border bg-sidebar-accent/80 p-5 backdrop-blur md:p-6"><div className="font-mono text-[10px] uppercase tracking-[.18em] text-primary">Brand DNA / 01</div><h2 className="mt-5 text-3xl font-extrabold leading-tight tracking-[-.05em] md:text-4xl">Сложное становится понятным.</h2><p className="mt-4 max-w-xs text-sm leading-relaxed text-sidebar-foreground/60">Система держит в фокусе аудиторию, голос и ценность бренда в каждой публикации.</p><div className="mt-8 flex flex-wrap gap-2"><span className="rounded border border-accent/25 bg-accent/10 px-2 py-1 text-[10px] font-bold text-accent">ясность</span><span className="rounded border border-accent/25 bg-accent/10 px-2 py-1 text-[10px] font-bold text-accent">доверие</span><span className="rounded border border-accent/25 bg-accent/10 px-2 py-1 text-[10px] font-bold text-accent">ритм</span></div></div>
+              <div className="space-y-5"><div className="rounded-xl border border-sidebar-border bg-primary p-5 text-sidebar shadow-lg shadow-primary/20"><div className="flex items-center justify-between"><span className="font-mono text-[10px] uppercase tracking-[.18em] opacity-70">Новый материал</span><Sparkles size={17} /></div><div className="mt-8 text-lg font-extrabold leading-tight">Как бренду говорить проще</div><div className="mt-4 h-1 rounded-full bg-sidebar/20"><div className="h-1 w-4/5 rounded-full bg-sidebar" /></div><div className="mt-3 text-[10px] font-bold uppercase tracking-[.12em] opacity-70">готово к редактуре</div></div><div className="rounded-xl border border-sidebar-border bg-sidebar-accent/70 p-5"><div className="font-mono text-[10px] uppercase tracking-[.18em] text-sidebar-foreground/45">Radar / 03</div><div className="mt-4 flex items-end justify-between"><span className="text-4xl font-extrabold tracking-[-.07em]">12</span><span className="mb-1 text-right text-xs leading-snug text-sidebar-foreground/50">свежих<br />направлений</span></div><div className="mt-5 flex gap-1"><span className="h-1.5 flex-1 rounded-full bg-accent" /><span className="h-1.5 flex-1 rounded-full bg-accent/60" /><span className="h-1.5 flex-1 rounded-full bg-accent/30" /><span className="h-1.5 flex-1 rounded-full bg-sidebar-border" /></div></div></div>
+            </div>
+            <div className="relative mt-10 flex items-center justify-between border-t border-sidebar-border pt-5 md:mt-16"><span className="font-mono text-[10px] uppercase tracking-[.16em] text-sidebar-foreground/40">Сгенерировано для Northline</span><span className="text-xs font-bold text-primary">AI / 01</span></div>
+          </div>
+        </div>
+      </section>
+      <section className="relative mt-24 border-t border-border pt-10 md:mt-32">
+        <div className="max-w-xl"><div className="font-mono text-[10px] uppercase tracking-[.2em] text-primary">Почему это работает</div><h2 className="mt-3 text-3xl font-extrabold tracking-[-.05em] md:text-5xl">Меньше рутины. Больше узнаваемости.</h2></div>
+        <div className="mt-10 grid gap-px overflow-hidden rounded-xl border border-border bg-border md:grid-cols-3">
+          {[
+            ['Понимает бизнес', 'Анализирует сайт или сообщество и собирает контекст, который обычно приходится объяснять SMM-команде вручную.'],
+            ['Пишет в вашем голосе', 'Каждый текст строится вокруг одной Brand DNA: аудитории, преимуществ, ценностей и Tone of Voice.'],
+            ['Доводит до публикации', 'От первой идеи до редактора и календаря — контент не теряется в заметках и чатах.'],
+          ].map(([title, text], index) => <article key={title} className="bg-card p-6 md:p-8"><div className="font-mono text-[10px] text-primary">0{index + 1}</div><h3 className="mt-10 text-xl font-extrabold tracking-[-.03em]">{title}</h3><p className="mt-3 text-sm leading-relaxed text-muted-foreground">{text}</p></article>)}
+        </div>
+      </section>
+      <section className="relative mt-16 flex flex-col items-start justify-between gap-6 rounded-xl bg-secondary p-6 md:flex-row md:items-center md:p-8"><div><div className="font-mono text-[10px] uppercase tracking-[.18em] text-accent">Ваш следующий шаг</div><h2 className="mt-2 text-2xl font-extrabold tracking-[-.04em]">Запустите свой первый контентный поток.</h2></div><Link href="/login" className="inline-flex shrink-0 items-center gap-2 rounded-md bg-sidebar px-4 py-3 text-sm font-bold text-sidebar-foreground transition hover:bg-sidebar/90" data-testid="link-landing-bottom-login">Войти через VK <ArrowUpRight size={15} /></Link></section>
+    </main>
+    <footer className="mx-auto flex max-w-7xl items-center justify-between border-t border-border px-5 py-5 text-xs text-muted-foreground md:px-9"><span>AI Контент Завод</span><span className="font-mono uppercase tracking-[.14em]">content / with intent</span></footer>
+  </div>;
+}
+
+function LoginPage() {
+  const [location] = useLocation();
+  const error = new URLSearchParams(location.split('?')[1] ?? '').get('error');
+  const errorLabel = error ? 'Не удалось войти через VK. Проверьте настройки приложения и попробуйте ещё раз.' : undefined;
+  return <div className="flex min-h-[100dvh] items-center justify-center bg-sidebar px-5 py-8 text-sidebar-foreground">
+    <div className="w-full max-w-md animate-in">
+      <Link href="/" className="mx-auto flex w-fit items-center gap-3" data-testid="link-login-brand"><BrandMark /><span><span className="block text-[15px] font-extrabold tracking-tight">AI Контент</span><span className="font-mono text-[10px] uppercase tracking-[.16em] text-sidebar-foreground/45">завод / 01</span></span></Link>
+      <div className="mt-10 rounded-xl border border-sidebar-border bg-sidebar-accent/75 p-6 shadow-2xl md:p-8">
+        <div className="font-mono text-[10px] uppercase tracking-[.2em] text-primary">Вход в цех</div>
+        <h1 className="mt-3 text-3xl font-extrabold tracking-[-.05em]">Продолжить работу с брендом</h1>
+        <p className="mt-3 text-sm leading-relaxed text-sidebar-foreground/60">Войдите через VK, чтобы сохранить проекты, генерации и контент‑план в своём рабочем пространстве.</p>
+        {errorLabel && <div className="mt-5 rounded-md border border-primary/30 bg-primary/10 px-3 py-2.5 text-xs leading-relaxed text-primary">{errorLabel}</div>}
+        <a href="/api/auth/vk" className="mt-8 flex w-full items-center justify-center gap-3 rounded-md bg-[#0077ff] px-4 py-3.5 text-sm font-extrabold text-white shadow-lg shadow-[#0077ff]/20 transition hover:-translate-y-0.5 hover:bg-[#006be6]" data-testid="button-login-vk"><span className="grid size-6 place-items-center rounded-full bg-white text-sm font-black text-[#0077ff]">VK</span>Войти через VK <ArrowUpRight size={16} /></a>
+        <div className="mt-5 flex items-center justify-center gap-2 text-center font-mono text-[10px] uppercase tracking-[.12em] text-sidebar-foreground/35"><ShieldCheck size={13} className="text-accent" />Безопасный вход через VK ID</div>
+      </div>
+      <Link href="/" className="mt-6 block text-center text-xs font-semibold text-sidebar-foreground/45 transition hover:text-sidebar-foreground" data-testid="link-login-back">Вернуться на обложку</Link>
+    </div>
+  </div>;
+}
+
+function ProtectedShell({ children }: { children: ReactNode }) {
+  const [, setLocation] = useLocation();
+  const [status, setStatus] = useState<'checking' | 'authenticated'>('checking');
+  useEffect(() => {
+    let active = true;
+    fetch('/api/auth/session')
+      .then((response) => response.json() as Promise<{ authenticated?: boolean }>)
+      .then((session) => {
+        if (!active) return;
+        if (session.authenticated) setStatus('authenticated');
+        else setLocation('/login');
+      })
+      .catch(() => {
+        if (active) setLocation('/login?error=session');
+      });
+    return () => { active = false; };
+  }, [setLocation]);
+  if (status === 'checking') return <div className="flex min-h-[100dvh] items-center justify-center bg-background"><div className="flex items-center gap-3 text-sm font-semibold text-muted-foreground"><span className="size-2 animate-pulse rounded-full bg-primary" />Проверяем доступ…</div></div>;
+  return <Shell>{children}</Shell>;
+}
+
 function Shell({ children }: { children: ReactNode }) {
   const [location] = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -88,7 +187,7 @@ function Shell({ children }: { children: ReactNode }) {
       mobileOpen ? 'translate-x-0' : '-translate-x-full',
     )}>
       <div className="flex items-center justify-between px-2">
-        <Link href="/" className="flex items-center gap-3" data-testid="link-brand">
+        <Link href="/app" className="flex items-center gap-3" data-testid="link-brand">
           <span className="relative grid size-9 place-items-center rounded-md bg-primary text-sidebar"><Zap size={18} strokeWidth={2.8} /></span>
           <span><span className="block text-[15px] font-extrabold tracking-tight">AI Контент</span><span className="font-mono text-[10px] uppercase tracking-[.16em] text-sidebar-foreground/50">завод / 01</span></span>
         </Link>
@@ -213,6 +312,6 @@ function DayCell({ day, items, onPublish }: { day: string; items: ScheduleItem[]
 
 function SettingsPage() { const [saved, setSaved] = useState(false); return <><PageIntro eyebrow="05 / Workspace" title="Настройки" description="Профиль рабочего пространства и точки, через которые контент выйдет к вашей аудитории." /><div className="grid gap-5 lg:grid-cols-[1fr_.85fr]"><section className="rounded-lg border border-border bg-card p-6"><div className="flex items-start justify-between"><div><div className="font-mono text-[10px] uppercase tracking-[.17em] text-muted-foreground">Профиль</div><h3 className="mt-1 text-lg font-extrabold">Рабочее пространство</h3></div><div className="grid size-10 place-items-center rounded-md bg-secondary text-accent"><Users size={18} /></div></div><div className="mt-7 space-y-5"><Field label="Название пространства" value="Northline / маркетинг" onChange={() => setSaved(false)} testId="input-workspace-name" /><Field label="Часовой пояс" value="Europe / Moscow (UTC+3)" onChange={() => setSaved(false)} testId="input-workspace-timezone" /><Field label="Рабочий язык" value="Русский" onChange={() => setSaved(false)} testId="input-workspace-language" /></div><div className="mt-7 flex items-center justify-between border-t border-border pt-5"><span className="text-xs text-muted-foreground">{saved ? 'Изменения сохранены' : 'Последнее изменение сегодня в 09:18'}</span><Button onClick={() => setSaved(true)} data-testid="button-save-settings"><Check size={15} />Сохранить</Button></div></section><section className="rounded-lg border border-border bg-card p-6"><div className="font-mono text-[10px] uppercase tracking-[.17em] text-muted-foreground">Каналы</div><h3 className="mt-1 text-lg font-extrabold">Куда публиковать</h3><div className="mt-6"><EmptyState icon={Send} title="Каналы не подключены" text="Подключение каналов появится в следующем обновлении. Пока можно планировать публикации вручную." /></div><div className="mt-5 flex items-center gap-2 rounded-md bg-muted p-3 text-xs text-muted-foreground"><Globe2 size={15} className="shrink-0 text-accent" />Безопасное подключение будет доступно здесь.</div></section></div></>; }
 
-function Router() { const [location] = useLocation(); return <ErrorBoundary resetKey={location}><Shell><Switch><Route path="/" component={DashboardPage} /><Route path="/projects" component={ProjectsPage} /><Route path="/content" component={ContentPage} /><Route path="/radar" component={RadarPage} /><Route path="/calendar" component={CalendarPage} /><Route path="/settings" component={SettingsPage} /><Route component={NotFound} /></Switch></Shell></ErrorBoundary>; }
+function Router() { const [location] = useLocation(); return <ErrorBoundary resetKey={location}><Switch><Route path="/" component={LandingPage} /><Route path="/login" component={LoginPage} /><Route path="/app"><ProtectedShell><DashboardPage /></ProtectedShell></Route><Route path="/projects"><ProtectedShell><ProjectsPage /></ProtectedShell></Route><Route path="/content"><ProtectedShell><ContentPage /></ProtectedShell></Route><Route path="/radar"><ProtectedShell><RadarPage /></ProtectedShell></Route><Route path="/calendar"><ProtectedShell><CalendarPage /></ProtectedShell></Route><Route path="/settings"><ProtectedShell><SettingsPage /></ProtectedShell></Route><Route component={NotFound} /></Switch></ErrorBoundary>; }
 function App() { return <QueryClientProvider client={queryClient}><TooltipProvider><WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}><Router /></WouterRouter><Toaster /></TooltipProvider></QueryClientProvider>; }
 export default App;
