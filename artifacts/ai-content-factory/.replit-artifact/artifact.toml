@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "AI Контент Завод"
+description = "Рабочее веб-приложение для малого бизнеса и маркетологов: создание ДНК бренда, генерация контента, идеи конкурентов и планирование публикаций."
+version = "1.0.0"
+id = "artifacts/ai-content-factory"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 24034
+
+[services.development]
+run = "pnpm --filter @workspace/ai-content-factory run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/ai-content-factory", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/ai-content-factory/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "24034"
+BASE_PATH = "/"

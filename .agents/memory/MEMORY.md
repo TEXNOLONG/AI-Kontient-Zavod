@@ -1,0 +1,1 @@
+- [Mistral generation fallback](mistral-generation.md) — keep content generation usable when provider quotas or API calls fail.

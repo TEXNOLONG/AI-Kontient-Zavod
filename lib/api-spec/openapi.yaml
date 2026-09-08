@@ -10,6 +10,16 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: dashboard
+    description: Workspace overview
+  - name: projects
+    description: Brand DNA projects
+  - name: content
+    description: AI-generated content
+  - name: radar
+    description: Competitor radar
+  - name: calendar
+    description: Publication planning
 paths:
   /healthz:
     get:
@@ -24,7 +34,300 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /dashboard:
+    get:
+      operationId: getDashboard
+      tags: [dashboard]
+      summary: Get workspace overview
+      responses:
+        "200":
+          description: Dashboard overview
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Dashboard"
+  /projects:
+    get:
+      operationId: listProjects
+      tags: [projects]
+      summary: List brand projects
+      responses:
+        "200":
+          description: Brand projects
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Project"
+    post:
+      operationId: createProject
+      tags: [projects]
+      summary: Create a project
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProjectInput"
+      responses:
+        "201":
+          description: Created project
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+  /projects/{id}:
+    get:
+      operationId: getProject
+      tags: [projects]
+      summary: Get a project
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Project
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+        "404":
+          description: Project not found
+    patch:
+      operationId: updateProject
+      tags: [projects]
+      summary: Update a project
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProjectUpdate"
+      responses:
+        "200":
+          description: Updated project
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+  /projects/{id}/analyze:
+    post:
+      operationId: analyzeProject
+      tags: [projects]
+      summary: Analyze a source and build brand DNA
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AnalysisInput"
+      responses:
+        "200":
+          description: Updated project with analysis
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+  /content:
+    get:
+      operationId: listPosts
+      tags: [content]
+      summary: List generated posts
+      parameters:
+        - in: query
+          name: projectId
+          schema:
+            type: [integer, "null"]
+        - in: query
+          name: status
+          schema:
+            type: [string, "null"]
+      responses:
+        "200":
+          description: Generated content
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Post"
+    post:
+      operationId: generatePost
+      tags: [content]
+      summary: Generate post variants
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PostInput"
+      responses:
+        "201":
+          description: Generated post
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Post"
+  /content/{id}:
+    patch:
+      operationId: updatePost
+      tags: [content]
+      summary: Edit or approve content
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PostUpdate"
+      responses:
+        "200":
+          description: Updated post
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Post"
+  /content/{id}/regenerate:
+    post:
+      operationId: regeneratePost
+      tags: [content]
+      summary: Regenerate content using the same brief
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "201":
+          description: Regenerated post
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Post"
+  /competitors:
+    get:
+      operationId: listCompetitors
+      tags: [radar]
+      summary: List competitors
+      parameters:
+        - in: query
+          name: projectId
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Competitors
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Competitor"
+    post:
+      operationId: createCompetitor
+      tags: [radar]
+      summary: Add a competitor
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CompetitorInput"
+      responses:
+        "201":
+          description: Added competitor
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Competitor"
+  /competitors/sync:
+    post:
+      operationId: syncCompetitors
+      tags: [radar]
+      summary: Refresh competitor posts and ideas
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SyncInput"
+      responses:
+        "200":
+          description: Competitor radar snapshot
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Competitor"
+  /calendar:
+    get:
+      operationId: listSchedule
+      tags: [calendar]
+      summary: List scheduled content
+      parameters:
+        - in: query
+          name: projectId
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Scheduled content
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ScheduleItem"
+    post:
+      operationId: schedulePost
+      tags: [calendar]
+      summary: Schedule content
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ScheduleInput"
+      responses:
+        "201":
+          description: Scheduled content
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ScheduleItem"
+  /calendar/{id}:
+    patch:
+      operationId: updateSchedule
+      tags: [calendar]
+      summary: Move or publish scheduled content
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ScheduleUpdate"
+      responses:
+        "200":
+          description: Updated schedule item
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ScheduleItem"
 components:
+  parameters:
+    Id:
+      in: path
+      name: id
+      required: true
+      schema:
+        type: integer
   schemas:
     HealthStatus:
       type: object
@@ -33,4 +336,144 @@ components:
           type: string
       required:
         - status
+    Project:
+      type: object
+      required: [id, name, sourceUrl, industry, audience, tone, usp, status, createdAt]
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        sourceUrl: { type: string }
+        industry: { type: string }
+        audience: { type: string }
+        tone: { type: string }
+        usp: { type: string }
+        values:
+          type: array
+          items: { type: string }
+        status: { type: string }
+        createdAt: { type: string, format: date-time }
+    ProjectInput:
+      type: object
+      required: [name, sourceUrl]
+      properties:
+        name: { type: string, minLength: 1 }
+        sourceUrl: { type: string, minLength: 1 }
+    ProjectUpdate:
+      type: object
+      properties:
+        name: { type: string, minLength: 1 }
+        industry: { type: string }
+        audience: { type: string }
+        tone: { type: string }
+        usp: { type: string }
+        values:
+          type: array
+          items: { type: string }
+        status: { type: string }
+    AnalysisInput:
+      type: object
+      required: [sourceUrl]
+      properties:
+        sourceUrl: { type: string, minLength: 1 }
+    Post:
+      type: object
+      required: [id, projectId, title, goal, format, text, status, variant, createdAt]
+      properties:
+        id: { type: integer }
+        projectId: { type: integer }
+        title: { type: string }
+        goal: { type: string }
+        format: { type: string }
+        text: { type: string }
+        imageUrl: { type: [string, "null"] }
+        status: { type: string }
+        variant: { type: integer }
+        createdAt: { type: string, format: date-time }
+    PostInput:
+      type: object
+      required: [projectId, goal, format, topic]
+      properties:
+        projectId: { type: integer }
+        goal: { type: string }
+        format: { type: string }
+        topic: { type: string, minLength: 1 }
+    PostUpdate:
+      type: object
+      properties:
+        title: { type: string }
+        text: { type: string }
+        status: { type: string }
+    CompetitorPost:
+      type: object
+      required: [id, text, postedAt, idea]
+      properties:
+        id: { type: integer }
+        text: { type: string }
+        postedAt: { type: string, format: date-time }
+        idea: { type: string }
+    Competitor:
+      type: object
+      required: [id, projectId, name, url, lastSync, posts]
+      properties:
+        id: { type: integer }
+        projectId: { type: integer }
+        name: { type: string }
+        url: { type: string }
+        lastSync: { type: string, format: date-time }
+        posts:
+          type: array
+          items:
+            $ref: "#/components/schemas/CompetitorPost"
+    CompetitorInput:
+      type: object
+      required: [projectId, name, url]
+      properties:
+        projectId: { type: integer }
+        name: { type: string, minLength: 1 }
+        url: { type: string, minLength: 1 }
+    SyncInput:
+      type: object
+      required: [projectId]
+      properties:
+        projectId: { type: integer }
+    ScheduleItem:
+      type: object
+      required: [id, projectId, postId, date, time, status, post]
+      properties:
+        id: { type: integer }
+        projectId: { type: integer }
+        postId: { type: integer }
+        date: { type: string, pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" }
+        time: { type: string }
+        status: { type: string }
+        post:
+          $ref: "#/components/schemas/Post"
+    ScheduleInput:
+      type: object
+      required: [projectId, postId, date, time]
+      properties:
+        projectId: { type: integer }
+        postId: { type: integer }
+        date: { type: string, pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" }
+        time: { type: string }
+    ScheduleUpdate:
+      type: object
+      properties:
+        date: { type: string, pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" }
+        time: { type: string }
+        status: { type: string }
+    Dashboard:
+      type: object
+      required: [project, totalPosts, approvedPosts, scheduledPosts, radarIdeas, recentPosts]
+      properties:
+        project:
+          $ref: "#/components/schemas/Project"
+        totalPosts: { type: integer }
+        approvedPosts: { type: integer }
+        scheduledPosts: { type: integer }
+        radarIdeas: { type: integer }
+        recentPosts:
+          type: array
+          items:
+            $ref: "#/components/schemas/Post"
 

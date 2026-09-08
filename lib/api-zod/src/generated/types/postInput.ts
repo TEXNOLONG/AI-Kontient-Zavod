@@ -6,6 +6,10 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface HealthStatus {
-  status: string;
+export interface PostInput {
+  projectId: number;
+  goal: string;
+  format: string;
+  /** @minLength 1 */
+  topic: string;
 }
