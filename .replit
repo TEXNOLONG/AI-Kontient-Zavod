@@ -18,3 +18,9 @@ expertMode = true
 [postMerge]
 path = "scripts/post-merge.sh"
 timeoutMs = 20000
+
+[userenv]
+
+[userenv.shared]
+VK_CLIENT_ID = "54585407"
+VK_REDIRECT_URI = "https://170e6e26-e061-48ec-bffa-bbc5d366fbe7-00-aqe4dpap1lbr.kirk.replit.dev/api/auth/vk"
