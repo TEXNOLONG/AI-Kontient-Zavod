@@ -7,7 +7,7 @@ import {
   socialChannelsTable,
 } from "@workspace/db";
 import { currentSession } from "./auth";
-import { decryptCredentials, encryptCredentials, publishToChannel, type Platform } from "../lib/publishing";
+import { encryptCredentials, publishToChannel, testChannelConnection, type Platform } from "../lib/publishing";
 
 const router: IRouter = Router();
 const platforms = new Set<Platform>(["vk", "ok", "max", "telegram", "zen"]);
@@ -81,9 +81,13 @@ router.post("/channels/:id/test", async (req, res): Promise<void> => {
     return;
   }
   try {
-    decryptCredentials(channel.credentials);
-    res.json({ ok: true, message: "Подключение сохранено. Тестовая публикация выполняется только из календаря." });
+    const message = await testChannelConnection(channel);
+    res.json({ ok: true, message: `${message}. Тестовый пост выполняется только из календаря.` });
   } catch (error) {
+    await db.update(socialChannelsTable).set({
+      status: "error",
+      lastError: error instanceof Error ? error.message : "Не удалось проверить подключение",
+    }).where(eq(socialChannelsTable.id, channel.id));
     res.status(400).json({ error: error instanceof Error ? error.message : "Не удалось проверить подключение" });
   }
 });

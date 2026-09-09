@@ -13,6 +13,16 @@
 - Required env: `SESSION_SECRET` — signing key for email login sessions and encryption of channel credentials
 - Optional env: `MISTRAL_API_KEY`
 
+## VK autopublishing
+
+1. Create or use a VK community and create a community access token with permission to publish to the community wall.
+2. Sign in to the app and open **Настройки → Каналы → Подключить канал → VK**.
+3. Enter a channel name, the community ID (`-123456`, `123456`, or `vk.com/club123456`), and the token. The token is encrypted before it is stored and is never returned to the browser.
+4. Click **Проверить**. The app calls VK `groups.getById` and reports whether the token can access the selected community.
+5. Approve a post, choose the VK channel in **Календарь**, select a date and time, and schedule it. The API queue checks due jobs every 30 seconds and publishes through VK `wall.post`.
+
+The VK token and community ID are required to publish. A running API service, `DATABASE_URL`, and `SESSION_SECRET` are also required. The scheduled time is interpreted by the API server; use the server/workspace timezone consistently when creating schedules.
+
 ## Stack
 
 - pnpm workspaces, Node.js 24, TypeScript 5.9

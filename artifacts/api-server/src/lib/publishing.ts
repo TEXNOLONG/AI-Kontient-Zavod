@@ -69,9 +69,33 @@ function describeMaxNetworkError(error: unknown): Error {
   return new Error(`MAX API network/TLS error${code}: ${cause.message}`);
 }
 
+function normalizeVkOwnerId(target: string): string {
+  const value = target.trim();
+  const namedGroup = value.match(/(?:club|public|group)(\d+)/i);
+  const numericGroup = value.match(/^-?\d+$/);
+  const rawId = namedGroup?.[1] ?? numericGroup?.[0];
+  const groupId = rawId ? Number(rawId) : Number.NaN;
+  if (!Number.isSafeInteger(groupId) || groupId === 0) {
+    throw new Error("Для VK укажите ID сообщества: например -123456 или vk.com/club123456");
+  }
+  return String(groupId > 0 ? -groupId : groupId);
+}
+
+async function readVkResponse(response: Response): Promise<Record<string, unknown>> {
+  const payload = (await response.json().catch(() => ({}))) as Record<string, unknown>;
+  const error = payload.error;
+  if (!response.ok || error) {
+    const message = typeof error === "object" && error !== null
+      ? (error as { error_msg?: unknown }).error_msg
+      : error;
+    throw new Error(String(message ?? `VK API HTTP ${response.status}`));
+  }
+  return payload;
+}
+
 async function publishVk(channel: SocialChannel, text: string, credentials: ChannelCredentials) {
   const params = new URLSearchParams({
-    owner_id: channel.target,
+    owner_id: normalizeVkOwnerId(channel.target),
     from_group: "1",
     message: text,
     access_token: credentials.token ?? "",
@@ -80,6 +104,22 @@ async function publishVk(channel: SocialChannel, text: string, credentials: Chan
   return responseId(await fetch(`https://api.vk.com/method/wall.post?${params}`, {
     signal: AbortSignal.timeout(15_000),
   }));
+}
+
+async function verifyVk(channel: SocialChannel, credentials: ChannelCredentials): Promise<string> {
+  if (!credentials.token) throw new Error("Для VK нужен токен сообщества");
+  const groupId = normalizeVkOwnerId(channel.target).replace("-", "");
+  const params = new URLSearchParams({
+    group_id: groupId,
+    access_token: credentials.token,
+    v: "5.199",
+  });
+  const payload = await readVkResponse(await fetch(`https://api.vk.com/method/groups.getById?${params}`, {
+    signal: AbortSignal.timeout(15_000),
+  }));
+  const groups = payload.response as { groups?: Array<{ name?: string }> } | undefined;
+  const name = groups?.groups?.[0]?.name;
+  return name ? `VK API доступен: ${name}` : "VK API доступен";
 }
 
 async function publishTelegram(channel: SocialChannel, text: string, credentials: ChannelCredentials) {
@@ -187,4 +227,10 @@ export async function publishToChannel(channel: SocialChannel, text: string): Pr
     case "zen": return publishZen(channel, text, credentials);
     default: throw new Error(`Платформа ${channel.platform} не поддерживается`);
   }
+}
+
+export async function testChannelConnection(channel: SocialChannel): Promise<string> {
+  const credentials = decryptCredentials(channel.credentials);
+  if (channel.platform === "vk") return verifyVk(channel, credentials);
+  return "Подключение сохранено";
 }
