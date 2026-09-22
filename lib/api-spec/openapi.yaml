@@ -353,6 +353,40 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SocialChannel"
+  /channels/vk/oauth/start:
+    get:
+      operationId: startVkOAuth
+      tags: [publishing]
+      summary: Start VK ID OAuth connection
+      parameters:
+        - name: name
+          in: query
+          required: true
+          schema: { type: string }
+        - name: target
+          in: query
+          required: true
+          schema: { type: string }
+      responses:
+        "302":
+          description: Redirect to VK ID authorization
+  /channels/vk/oauth/callback:
+    get:
+      operationId: finishVkOAuth
+      tags: [publishing]
+      summary: Finish VK ID OAuth connection
+      parameters:
+        - name: code
+          in: query
+          required: false
+          schema: { type: string }
+        - name: state
+          in: query
+          required: false
+          schema: { type: string }
+      responses:
+        "302":
+          description: Redirect back to settings
   /channels/{id}:
     delete:
       operationId: deleteChannel

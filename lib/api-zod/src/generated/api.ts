@@ -512,6 +512,28 @@ export const CreateChannelResponse = zod.object({
 
 
 /**
+ * @summary Start VK ID OAuth connection
+ */
+export const StartVkOAuthQueryParams = zod.object({
+  "name": zod.coerce.string(),
+  "target": zod.coerce.string()
+})
+
+export const StartVkOAuthResponse = zod.void()
+
+
+/**
+ * @summary Finish VK ID OAuth connection
+ */
+export const FinishVkOAuthQueryParams = zod.object({
+  "code": zod.coerce.string().optional(),
+  "state": zod.coerce.string().optional()
+})
+
+export const FinishVkOAuthResponse = zod.void()
+
+
+/**
  * @summary Disconnect a social channel
  */
 export const DeleteChannelParams = zod.object({

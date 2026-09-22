@@ -4,10 +4,15 @@ import type { SocialChannel } from "@workspace/db";
 export type Platform = "vk" | "ok" | "max" | "telegram" | "zen";
 export type ChannelCredentials = {
   token?: string;
+  refreshToken?: string;
+  expiresAt?: number;
+  vkUserId?: string;
   applicationKey?: string;
   applicationSecret?: string;
   sessionSecret?: string;
 };
+
+export type CredentialsUpdater = (credentials: ChannelCredentials) => Promise<void> | void;
 
 const key = () => {
   const secret = process.env.SESSION_SECRET;
@@ -93,12 +98,69 @@ async function readVkResponse(response: Response): Promise<Record<string, unknow
   return payload;
 }
 
-async function publishVk(channel: SocialChannel, text: string, credentials: ChannelCredentials) {
+async function exchangeVkToken(params: Record<string, string>): Promise<ChannelCredentials> {
+  const response = await fetch("https://id.vk.com/oauth2/auth", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams(params),
+    signal: AbortSignal.timeout(15_000),
+  });
+  const payload = (await response.json().catch(() => ({}))) as {
+    access_token?: unknown;
+    refresh_token?: unknown;
+    expires_in?: unknown;
+    user_id?: unknown;
+    error?: unknown;
+    error_description?: unknown;
+  };
+  if (!response.ok || !payload.access_token) {
+    throw new Error(String(payload.error_description ?? payload.error ?? `VK OAuth HTTP ${response.status}`));
+  }
+  return {
+    token: String(payload.access_token),
+    refreshToken: typeof payload.refresh_token === "string" ? payload.refresh_token : undefined,
+    expiresAt: typeof payload.expires_in === "number" ? Date.now() + payload.expires_in * 1000 : undefined,
+    vkUserId: payload.user_id == null ? undefined : String(payload.user_id),
+  };
+}
+
+async function vkAccessToken(
+  credentials: ChannelCredentials,
+  onCredentialsUpdated?: CredentialsUpdater,
+): Promise<string> {
+  if (credentials.token && (!credentials.expiresAt || credentials.expiresAt > Date.now() + 60_000)) {
+    return credentials.token;
+  }
+  if (!credentials.refreshToken) {
+    if (credentials.token) return credentials.token;
+    throw new Error("VK-сессия истекла. Подключите сообщество через VK заново.");
+  }
+  const clientId = process.env.VK_CLIENT_ID;
+  const clientSecret = process.env.VK_CLIENT_SECRET;
+  if (!clientId) throw new Error("VK_CLIENT_ID не настроен");
+  const refreshed = await exchangeVkToken({
+    client_id: clientId,
+    refresh_token: credentials.refreshToken,
+    grant_type: "refresh_token",
+    ...(clientSecret ? { client_secret: clientSecret } : {}),
+  });
+  const updated = { ...credentials, ...refreshed };
+  await onCredentialsUpdated?.(updated);
+  return refreshed.token as string;
+}
+
+async function publishVk(
+  channel: SocialChannel,
+  text: string,
+  credentials: ChannelCredentials,
+  onCredentialsUpdated?: CredentialsUpdater,
+) {
+  const accessToken = await vkAccessToken(credentials, onCredentialsUpdated);
   const params = new URLSearchParams({
     owner_id: normalizeVkOwnerId(channel.target),
     from_group: "1",
     message: text,
-    access_token: credentials.token ?? "",
+    access_token: accessToken,
     v: "5.199",
   });
   return responseId(await fetch(`https://api.vk.com/method/wall.post?${params}`, {
@@ -107,11 +169,11 @@ async function publishVk(channel: SocialChannel, text: string, credentials: Chan
 }
 
 async function verifyVk(channel: SocialChannel, credentials: ChannelCredentials): Promise<string> {
-  if (!credentials.token) throw new Error("Для VK нужен токен сообщества");
+  const accessToken = await vkAccessToken(credentials);
   const groupId = normalizeVkOwnerId(channel.target).replace("-", "");
   const params = new URLSearchParams({
     group_id: groupId,
-    access_token: credentials.token,
+    access_token: accessToken,
     v: "5.199",
   });
   const payload = await readVkResponse(await fetch(`https://api.vk.com/method/groups.getById?${params}`, {
@@ -217,10 +279,14 @@ async function publishZen(channel: SocialChannel, text: string, credentials: Cha
   }));
 }
 
-export async function publishToChannel(channel: SocialChannel, text: string): Promise<string | undefined> {
+export async function publishToChannel(
+  channel: SocialChannel,
+  text: string,
+  onCredentialsUpdated?: CredentialsUpdater,
+): Promise<string | undefined> {
   const credentials = decryptCredentials(channel.credentials);
   switch (channel.platform as Platform) {
-    case "vk": return publishVk(channel, text, credentials);
+    case "vk": return publishVk(channel, text, credentials, onCredentialsUpdated);
     case "ok": return publishOk(channel, text, credentials);
     case "max": return publishMax(channel, text, credentials);
     case "telegram": return publishTelegram(channel, text, credentials);

@@ -8,3 +8,9 @@ The platform is intended for many users: email login identifies the user and wor
 **Why:** A shared session or global channel token would publish one user's content into another user's channels and create a serious data and security boundary failure.
 
 **How to apply:** Add explicit user/workspace ownership to projects, posts, schedules, and social connections; scope every query by the authenticated user; encrypt provider credentials; keep provider adapters separate from login.
+
+Provider publishing authorization must be obtained and refreshed server-side; never expose OAuth access or refresh tokens to the browser, and persist refreshed credentials encrypted.
+
+**Why:** OAuth access tokens expire and refresh tokens can rotate. Keeping both behind the API preserves the publishing boundary and keeps scheduled jobs working after the initial login.
+
+**How to apply:** Provider adapters may return refreshed credentials through a persistence callback owned by the route layer; the database stores only encrypted credentials.

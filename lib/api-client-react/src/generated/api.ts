@@ -24,6 +24,7 @@ import type {
   Competitor,
   CompetitorInput,
   Dashboard,
+  FinishVkOAuthParams,
   HealthStatus,
   ListCompetitorsParams,
   ListPostsParams,
@@ -42,6 +43,7 @@ import type {
   ScheduleUpdate,
   SocialChannel,
   SocialChannelInput,
+  StartVkOAuthParams,
   SyncInput,
   TestChannel200
 } from './api.schemas';
@@ -1495,6 +1497,174 @@ export const useCreateChannel = <TError = ErrorType<unknown>,
       > => {
       return useMutation(getCreateChannelMutationOptions(options));
     }
+
+export const getStartVkOAuthUrl = (params: StartVkOAuthParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/channels/vk/oauth/start?${stringifiedParams}` : `/api/channels/vk/oauth/start`
+}
+
+/**
+ * @summary Start VK ID OAuth connection
+ */
+export const startVkOAuth = async (params: StartVkOAuthParams, options?: Parameters<typeof customFetch>[1]): Promise<unknown> => {
+
+  return customFetch<unknown>(getStartVkOAuthUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getStartVkOAuthQueryKey = (params?: StartVkOAuthParams,) => {
+    return [
+    `/api/channels/vk/oauth/start`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getStartVkOAuthQueryOptions = <TData = Awaited<ReturnType<typeof startVkOAuth>>, TError = ErrorType<void>>(params: StartVkOAuthParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof startVkOAuth>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getStartVkOAuthQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof startVkOAuth>>> = ({ signal }) => startVkOAuth(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof startVkOAuth>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type StartVkOAuthQueryResult = NonNullable<Awaited<ReturnType<typeof startVkOAuth>>>
+export type StartVkOAuthQueryError = ErrorType<void>
+
+
+/**
+ * @summary Start VK ID OAuth connection
+ */
+
+export function useStartVkOAuth<TData = Awaited<ReturnType<typeof startVkOAuth>>, TError = ErrorType<void>>(
+ params: StartVkOAuthParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof startVkOAuth>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getStartVkOAuthQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getFinishVkOAuthUrl = (params?: FinishVkOAuthParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/channels/vk/oauth/callback?${stringifiedParams}` : `/api/channels/vk/oauth/callback`
+}
+
+/**
+ * @summary Finish VK ID OAuth connection
+ */
+export const finishVkOAuth = async (params?: FinishVkOAuthParams, options?: Parameters<typeof customFetch>[1]): Promise<unknown> => {
+
+  return customFetch<unknown>(getFinishVkOAuthUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getFinishVkOAuthQueryKey = (params?: FinishVkOAuthParams,) => {
+    return [
+    `/api/channels/vk/oauth/callback`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getFinishVkOAuthQueryOptions = <TData = Awaited<ReturnType<typeof finishVkOAuth>>, TError = ErrorType<void>>(params?: FinishVkOAuthParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof finishVkOAuth>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getFinishVkOAuthQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof finishVkOAuth>>> = ({ signal }) => finishVkOAuth(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof finishVkOAuth>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type FinishVkOAuthQueryResult = NonNullable<Awaited<ReturnType<typeof finishVkOAuth>>>
+export type FinishVkOAuthQueryError = ErrorType<void>
+
+
+/**
+ * @summary Finish VK ID OAuth connection
+ */
+
+export function useFinishVkOAuth<TData = Awaited<ReturnType<typeof finishVkOAuth>>, TError = ErrorType<void>>(
+ params?: FinishVkOAuthParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof finishVkOAuth>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getFinishVkOAuthQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
 
 export const getDeleteChannelUrl = (id: number,) => {
 

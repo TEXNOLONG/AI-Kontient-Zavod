@@ -238,6 +238,16 @@ export type ListScheduleParams = {
 projectId: number;
 };
 
+export type StartVkOAuthParams = {
+name: string;
+target: string;
+};
+
+export type FinishVkOAuthParams = {
+code?: string;
+state?: string;
+};
+
 export type TestChannel200 = {
   ok: boolean;
   message: string;
