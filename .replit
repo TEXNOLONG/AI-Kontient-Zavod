@@ -26,3 +26,6 @@ MISTRAL_API_KEY = "MGUB4PCqHpw8LNDdLkKH3tDf4v5YN087"
 
 [nix]
 channel = "stable-25_05"
+
+[[ports]]
+localPort = 8080
